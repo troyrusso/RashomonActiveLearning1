@@ -44,11 +44,12 @@ source(paste0(dir,"StoppingCriteria.R"))
 
 ## Data
 ```{r}
+set.seed(1)
 ### Input ###
-N = 10000
+N = 1000
 K = 5
-NClass = 2
-ClassProportion = c(1/2,1/2)
+NClass = 7
+ClassProportion = c(rep(1/14,6),8/14)
 MeanMatrix = rep(0,K)
 CorrVal = 0
 
@@ -91,43 +92,43 @@ mean(KNNModel != dat[,"Label"])
 
 ## Logistic
 ```{r}
-LogisticModel = glm(as.factor(Label) ~ ., 
-                    data = dat[, setdiff(names(dat), c("ID", "Y"))],
-                    family = "binomial")
-
-LogisticModelPredicted = predict(LogisticModel,
-                                 newdata = dat[, setdiff(names(dat), c("ID", "Y"))],
-                                 type = "response")
-LogisticModelPredicted <- ifelse(LogisticModelPredicted > 0.5,1,0)+1
-
-mean(LogisticModelPredicted != dat$Label)
+# LogisticModel = glm(as.factor(Label) ~ ., 
+#                     data = dat[, setdiff(names(dat), c("ID", "Y"))],
+#                     family = "binomial")
+# 
+# LogisticModelPredicted = predict(LogisticModel,
+#                                  newdata = dat[, setdiff(names(dat), c("ID", "Y"))],
+#                                  type = "response")
+# LogisticModelPredicted <- ifelse(LogisticModelPredicted > 0.5,1,0)+1
+# 
+# mean(LogisticModelPredicted != dat$Label)
 ```
 
 
 ## LASSO
 ```{r}
-### Lambda ###
-CVLasso = cv.glmnet(x=as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
-                    y=as.matrix(dat[, "Label"]), 
-                    alpha = 1,
-                    type.measure = "class",
-                    family = "binomial")
-LASSOLambda = CVLasso$lambda.min
-
-# Training Prediction #
-LASSOTrainingPrediction = glmnet(x=as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
-                                 y=as.matrix(dat[, "Label"]), 
-                                 alpha = 1,
-                                 lambda = LASSOLambda,
-                                 family = "binomial")
-
-LASSOTrainingPrediction = predict(LASSOTrainingPrediction, 
-                                  newx = as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
-                                  s = LASSOLambda,
-                                  type = "response")[,1]
-LASSOTrainingPrediction =  ifelse(LASSOTrainingPrediction > 0.5,1,0)
-
-mean((LASSOTrainingPrediction+1) != dat$Label)
+# ### Lambda ###
+# CVLasso = cv.glmnet(x=as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
+#                     y=as.matrix(dat[, "Label"]), 
+#                     alpha = 1,
+#                     type.measure = "class",
+#                     family = "binomial")
+# LASSOLambda = CVLasso$lambda.min
+# 
+# # Training Prediction #
+# LASSOTrainingPrediction = glmnet(x=as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
+#                                  y=as.matrix(dat[, "Label"]), 
+#                                  alpha = 1,
+#                                  lambda = LASSOLambda,
+#                                  family = "binomial")
+# 
+# LASSOTrainingPrediction = predict(LASSOTrainingPrediction, 
+#                                   newx = as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
+#                                   s = LASSOLambda,
+#                                   type = "response")[,1]
+# LASSOTrainingPrediction =  ifelse(LASSOTrainingPrediction > 0.5,1,0)
+# 
+# mean((LASSOTrainingPrediction+1) != dat$Label)
 ```
 
 ## Random Selection
@@ -138,55 +139,81 @@ CandidateSet = RandomStart$CandidateSet
 ```
 
 ## Simulation
+
 ```{r}
-### Progres Bar ###
-pb = txtProgressBar(min = 0, 
+RandomSelectorSimulationFunc = function(dat,
+                                        TailN,
+                                        ErrorThreshold,
+                                        VarThreshold){
+  
+  
+  ### Progres Bar ###
+  pb = txtProgressBar(min = 0, 
                       max = N,
                       style = 3,  
                       width = 50,
                       char = "=")
-start_time = Sys.time()
+  start_time = Sys.time()
   
-### Simulation ###
-Error = numeric(N)
-TailN = 3
-StopIter = NULL
-for(iter in 1:N){
-  # Progress Bar #
-  setTxtProgressBar(pb, iter)
-
-  KnnModelIter = class::knn(train = TrainingSet[, setdiff(names(dat), c("Y","ID"))], 
-                            test = TrainingSet[,setdiff(names(dat), c("Y","ID"))], 
-                            cl = TrainingSet[,"Label"], 
-                            k = 10)
-  Error[iter] = mean(KnnModelIter != TrainingSet[,"Label"])
+  ### Simulation ###
+  Error = numeric(N)
+  TailN = 3
+  StopIter = NULL
+  for(iter in 1:N){
+    
+    # Progress Bar #
+    setTxtProgressBar(pb, iter)
   
+    KnnModelIter = class::knn(train = TrainingSet[, setdiff(names(dat), c("Y","ID"))], 
+                              test = TrainingSet[,setdiff(names(dat), c("Y","ID"))], 
+                              cl = TrainingSet[,"Label"], 
+                              k = 3)
+    Error[iter] = mean(KnnModelIter != TrainingSet[,"Label"])
+    
+    
+    if(iter > TailN){if(is.null(StopIter)){StopIter = StoppingCriteriaFunc(ErrorVector = Error[1:iter], 
+                                                                           ErrorThreshold = 0.05, 
+                                                                           VarThreshold = 0.01, 
+                                                                           TailN = 10)}}
+    
+    RandomSelector = RandomSelectorFunc(SelectorN = 1, TrainingSet, CandidateSet)
+    TrainingSet = RandomSelector$TrainingSet
+    CandidateSet = RandomSelector$CandidateSet
+  }
+  ### System Time ###
+  close(pb)
+  end_time = Sys.time()
+  run_time = end_time - start_time
   
-  if(iter > TailN){if(is.null(StopIter)){StopIter = StoppingCriteriaFunc(ErrorVector = Error[1:iter], 
-                                                                         ErrorThreshold = 0.1, 
-                                                                         VarThreshold = 0.01, 
-                                                                         TailN = 3)}}
+  ErrorScatterPlot = ggplot() +
+    # geom_point(mapping = aes(x = 1:length(Error), y = Error)) + 
+    geom_line(mapping = aes(x = 1:length(Error), y = Error)) + 
+    geom_vline(xintercept = StopIter, color = "red") + 
+    geom_hline(yintercept = Error[StopIter], color = "black", linetype = "dotted", alpha = 0.4) + 
+    annotate("text", x = StopIter, y = max(Error), label = StopIter)
   
-  RandomSelector = RandomSelectorFunc(SelectorN = 1, TrainingSet, CandidateSet)
-  TrainingSet = RandomSelector$TrainingSet
-  CandidateSet = RandomSelector$CandidateSet
-}
-### System Time ###
-close(pb)
-end_time = Sys.time()
-run_time = end_time - start_time
-
-ErrorScatterPlot = ggplot() +
-  # geom_point(mapping = aes(x = 1:length(Error), y = Error)) + 
-  geom_line(mapping = aes(x = 1:length(Error), y = Error)) + 
-  geom_vline(xintercept = StopIter, color = "red")
-
-ErrorScatterPlot
+  ErrorScatterPlot
+  
+  return(list(Error = Error,
+              StopIter = StopIter,
+              ErrorScatterPlot = ErrorScatterPlot,
+              run_time = run_time))
+    
+  }
 ```
 
+```{r}
+RandomSelectorSimulationFunc(dat = dat,
+                             TailN = 5,
+                             ErrorThreshold = 0.01,
+                             VarThreshold = .1) -> SimResults
+```
 
-
-
+```{r}
+SimResults$StopIter
+SimResults$Error[1:SimResults$StopIter]
+SimResults$ErrorScatterPlot
+```
 
 
 
