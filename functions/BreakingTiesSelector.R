@@ -1,9 +1,20 @@
-### Summary: Randomly selects data until there is one of each class
+### Summary:
 ### Inputs:
-# InitialN: Number of observations to sample at each iteartion
-# dat: data set
 ### Output:
-# dat: A training set and a candidate set
 
-BreakingTiesSelectorFunc = function(SelectorN = 1, TrainingSet, CandidateSet){
+BreakingTiesSelectorFunc = function(Model, TrainingDataSet, SelectorN = 2){
+  
+  ModelProbabilities = predict(Model,
+                               newdata = TrainingDataSet,
+                               type = "prob")
+  
+  ProbMax1 = apply(X = ModelProbabilities, MARGIN = 1, FUN = max)
+  ProbMax2 = apply(X = ModelProbabilities, 
+                   MARGIN = 1, 
+                   FUN = function(x) {sort(x,partial=length(x)-1)[length(x)-1]})
+  
+  TrainingDataSet$BreakingTiesProb = ProbMax1 - ProbMax2
+  IDRec = arrange(TrainingDataSet, BreakingTiesProb)$ID[1:SelectorN]
+  
+  return(IDRec)
 }

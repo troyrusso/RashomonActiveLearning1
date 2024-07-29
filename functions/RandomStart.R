@@ -9,7 +9,7 @@ RandomStartFunc = function(InitialN = 1, dat){
   
   ### Set Up ###
   N = nrow(dat)
-  Classes = sort(unique(dat$Label))
+  Classes = sort(unique(dat$Y))
 
   TrainingIndices = sample(1:N, InitialN)
   CandidateIndices = setdiff(1:N, TrainingIndices)
@@ -17,13 +17,14 @@ RandomStartFunc = function(InitialN = 1, dat){
   CandidateSet = dat[CandidateIndices, ]
   
   ### While Loop ###
-  while(length(unique(TrainingSet$Label)) != length(Classes)){
+  while(length(unique(TrainingSet$Y)) != length(Classes)){
     
     ## Draw ##
     TrainingIndices = c(TrainingIndices, sample(CandidateIndices, InitialN))
     CandidateIndices = setdiff(CandidateIndices, TrainingIndices)
     TrainingSet = dat[TrainingIndices, ]
     CandidateSet = dat[CandidateIndices, ]
+    
   }
 
   return(list(TrainingSet = TrainingSet,
