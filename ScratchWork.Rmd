@@ -14,9 +14,11 @@ output:
 ---
 
 # Set Up
+
 ## Notes
 
 ## Libr.
+
 ```{r message=FALSE, warning=FALSE}
 library(MASS)
 library(tidyverse)
@@ -27,52 +29,64 @@ library(glmnet)
 ```
 
 ## Rm. Var.
+
 ```{r}
 rm(list=ls())
 ```
 
 ## Functions
+
 ```{r}
 dir = "/Users/simondn/Documents/RashomonActiveLearning/"
-source(paste0(dir,"GenerateData.R"))
-source(paste0(dir,"RandomStart.R"))
-source(paste0(dir,"RandomSelector.R"))
-source(paste0(dir,"StoppingCriteria.R"))
+source(paste0(dir,"functions/BreakingTiesSelector.R"))
+source(paste0(dir,"functions/GenerateData.R"))
+source(paste0(dir,"functions/GenerateData2.R"))
+source(paste0(dir,"functions/RandomStart.R"))
+source(paste0(dir,"functions/RandomSelector.R"))
+source(paste0(dir,"functions/SelectorSimulationFunc.R"))
+source(paste0(dir,"functions/StoppingCriteria.R"))
 ```
 
 # Generate Data
 
 ## Data
+
 ```{r}
-set.seed(1)
+set.seed(3)
 ### Input ###
 N = 1000
-K = 5
-NClass = 7
-ClassProportion = c(rep(1/14,6),8/14)
+K = 2
+NClass = 2
+ClassProportion = c(1/3,2/3)
+# ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
-CorrVal = 0
+CorrVal = 0.0
+```
 
+```{r}
 ### Data ###
-DGPResults = GenerateDataFunc(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
+# DGPResults = GenerateDataFunc(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
+DGPResults = GenerateDataFunc2(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
 dat = DGPResults$dat
+YStar = DGPResults$YStar
 TrueBetas = DGPResults$TrueBetas
 Noise = DGPResults$noise
 # rm(DGPResults)
 ```
 
 ## Visualize
+
 ```{r}
-HistogramY = ggplot(data = dat) +
-  geom_histogram(mapping = aes(x = Y, color = as.factor(Label)))
+HistogramY = ggplot() +
+  geom_histogram(mapping = aes(x = YStar, color = as.factor(dat$Y)))
   # geom_point(mapping = aes(x = Y, y = 0, color = as.factor(Label))) 
 
-ScatterPlotY = ggplot(data = dat) +
-  geom_point(mapping = aes(x = Y, y = 0, color = as.factor(Label)))
+ScatterPlotY = ggplot() +
+  geom_point(mapping = aes(x = YStar, y = 0, color = as.factor(dat$Y)))
 
 
 ScatterPlotX1X2 = ggplot(data = dat) +
-  geom_point(mapping = aes(x = X1, y = X2, color = as.factor(Label))) 
+  geom_point(mapping = aes(x = X1, y = X2, color = as.factor(Y))) 
 
 ScatterPlotY
 HistogramY
@@ -80,30 +94,43 @@ ScatterPlotX1X2
 ```
 
 # Model
-## KNN
-```{r}
-KNNModel = knn(train = dat[, setdiff(names(dat), c("ID", "Y"))],
-               test =  dat[, setdiff(names(dat), c("ID", "Y"))],
-               cl = dat[,"Label"],
-               k = 5)
-mean(KNNModel != dat[,"Label"])
-```
-
 
 ## Logistic
 ```{r}
-# LogisticModel = glm(as.factor(Label) ~ ., 
-#                     data = dat[, setdiff(names(dat), c("ID", "Y"))],
-#                     family = "binomial")
-# 
-# LogisticModelPredicted = predict(LogisticModel,
-#                                  newdata = dat[, setdiff(names(dat), c("ID", "Y"))],
-#                                  type = "response")
-# LogisticModelPredicted <- ifelse(LogisticModelPredicted > 0.5,1,0)+1
-# 
-# mean(LogisticModelPredicted != dat$Label)
+LogModel = glm(Y ~ ., 
+                   data = dat[, setdiff(names(dat), c("ID"))],
+                   family = "binomial")
+LogPredicted = 1*(predict(LogModel, newdata = dat, type = "response")>0.5)+1
+LogPredictedProbabilities = predict(LogModel,
+                                    newdata = dat,
+                                    type = "response")
+mean(LogPredicted != dat$Y)
 ```
 
+
+## KNN
+```{r}
+KNNModel = knn(train = dat[, setdiff(names(dat), c("Y", "ID"))],
+               test =  dat[, setdiff(names(dat), c("Y", "ID"))],
+               cl = dat[,"Y"],
+               k = 5)
+mean(KNNModel != dat[,"Y"])
+```
+
+## Multinom
+```{r}
+library(nnet)
+MultinomModel = multinom(Y ~ .,
+                    data = dat,
+                    trace = FALSE)
+
+MultinomModelPredicted = predict(MultinomModel,
+                                 newdata = dat)
+MultinomModelPredictedProbabilities = predict(MultinomModel,
+                                              newdata = dat,
+                                              type = "prob")
+mean(MultinomModelPredicted != dat$Y)
+```
 
 ## LASSO
 ```{r}
@@ -132,6 +159,7 @@ mean(KNNModel != dat[,"Label"])
 ```
 
 ## Random Selection
+
 ```{r}
 RandomStart = RandomStartFunc(InitialN=1, dat=dat)
 TrainingSet = RandomStart$TrainingSet
@@ -141,94 +169,64 @@ CandidateSet = RandomStart$CandidateSet
 ## Simulation
 
 ```{r}
-RandomSelectorSimulationFunc = function(dat,
-                                        TailN,
-                                        ErrorThreshold,
-                                        VarThreshold){
-  
-  
-  ### Progres Bar ###
-  pb = txtProgressBar(min = 0, 
-                      max = N,
-                      style = 3,  
-                      width = 50,
-                      char = "=")
-  start_time = Sys.time()
-  
-  ### Simulation ###
-  Error = numeric(N)
-  TailN = 3
-  StopIter = NULL
-  for(iter in 1:N){
-    
-    # Progress Bar #
-    setTxtProgressBar(pb, iter)
-  
-    KnnModelIter = class::knn(train = TrainingSet[, setdiff(names(dat), c("Y","ID"))], 
-                              test = TrainingSet[,setdiff(names(dat), c("Y","ID"))], 
-                              cl = TrainingSet[,"Label"], 
-                              k = 3)
-    Error[iter] = mean(KnnModelIter != TrainingSet[,"Label"])
-    
-    
-    if(iter > TailN){if(is.null(StopIter)){StopIter = StoppingCriteriaFunc(ErrorVector = Error[1:iter], 
-                                                                           ErrorThreshold = 0.05, 
-                                                                           VarThreshold = 0.01, 
-                                                                           TailN = 10)}}
-    
-    RandomSelector = RandomSelectorFunc(SelectorN = 1, TrainingSet, CandidateSet)
-    TrainingSet = RandomSelector$TrainingSet
-    CandidateSet = RandomSelector$CandidateSet
-  }
-  ### System Time ###
-  close(pb)
-  end_time = Sys.time()
-  run_time = end_time - start_time
-  
-  ErrorScatterPlot = ggplot() +
-    # geom_point(mapping = aes(x = 1:length(Error), y = Error)) + 
-    geom_line(mapping = aes(x = 1:length(Error), y = Error)) + 
-    geom_vline(xintercept = StopIter, color = "red") + 
-    geom_hline(yintercept = Error[StopIter], color = "black", linetype = "dotted", alpha = 0.4) + 
-    annotate("text", x = StopIter, y = max(Error), label = StopIter) + 
-    annotate("text", x = 0, y = Error[StopIter], label = round(Error[StopIter],3))
-  
-  ErrorScatterPlot
-  
-  return(list(Error = Error,
-              StopIter = StopIter,
-              ErrorScatterPlot = ErrorScatterPlot,
-              run_time = run_time))
-    
-  }
+dat = dat
+TailN = 50
+ErrorThreshold = 0.15
+VarThreshold = .1
+TrainingSet = TrainingSet
+CandidateSet = CandidateSet
+SelectorN = 1
+```
+
+
+```{r}
+SelectorSimulationFunc(dat = dat,
+                       TailN = TailN,
+                       ErrorThreshold = ErrorThreshold,
+                       VarThreshold = VarThreshold,
+                       TrainingSet = TrainingSet,
+                       CandidateSet = CandidateSet,
+                       SelectorType = "Random",
+                       SelectorN = 1) -> SimResultsRandom
+
+SelectorSimulationFunc(dat = dat,
+                       TailN = TailN,
+                       ErrorThreshold = ErrorThreshold,
+                       VarThreshold = VarThreshold,
+                       TrainingSet = TrainingSet,
+                       CandidateSet = CandidateSet,
+                       SelectorType = "BreakingTies",
+                       SelectorN = 1) -> SimResultsBreakingTies
 ```
 
 ```{r}
-RandomSelectorSimulationFunc(dat = dat,
-                             TailN = 5,
-                             ErrorThreshold = 0.01,
-                             VarThreshold = .1) -> SimResults
+LineTypes = c("Random" = "dashed",
+         "BreakingTies" = "solid")
+
+ErrorScatterPlot = ggplot() +
+    geom_line(mapping = aes(x = 1:length(SimResultsRandom$Error), 
+                            y = SimResultsRandom$Error,
+                            linetype = "Random")) + 
+    geom_line(mapping = aes(x = 1:length(SimResultsBreakingTies$Error), 
+                            y = SimResultsBreakingTies$Error,
+                            linetype = "BreakingTies")) + 
+    geom_vline(xintercept = SimResultsRandom$StopIter, 
+               color = "red",
+               linetype = "dashed") + 
+    geom_vline(xintercept = SimResultsBreakingTies$StopIter, 
+               color = "red",
+               linetype = "solid") +
+# Aesthetics
+    xlab("Iterations") +
+    ylab("Error") +
+    ggtitle("Simulation by Error") +
+    theme(plot.title = element_text(size = 15, hjust = 0.5))
+
+ErrorScatterPlot
+
 ```
 
 ```{r}
-SimResults$ErrorScatterPlot
+SimResultsRandom$ErrorScatterPlot
+SimResultsBreakingTies$ErrorScatterPlot
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
