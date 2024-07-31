@@ -4,14 +4,18 @@
 
 SelectorTypeSwitchFunc = function(SelectorType, 
                                   SelectorN, 
+                                  TestSet,
                                   TrainingSet, 
                                   CandidateSet, 
                                   LabelProbabilities){
   switch(SelectorType,
          Random = {
-           SelectorDataSets = RandomSelectorFunc(SelectorN = SelectorN, TrainingSet, CandidateSet)},
+           SelectorDataSets = RandomSelectorFunc(SelectorN = SelectorN,
+                                                 TrainingSet = TrainingSet, 
+                                                 CandidateSet = CandidateSet)},
          BreakingTies = {
            SelectorDataSets = BreakingTiesSelectorFunc(ClassProbabilities = LabelProbabilities,
+                                                       TestSet = TestSet,
                                                        TrainingSet = TrainingSet,
                                                        CandidateSet = CandidateSet,
                                                        SelectorN = SelectorN)})

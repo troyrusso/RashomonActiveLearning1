@@ -1,4 +1,5 @@
 SelectorSimulationFunc = function(dat,
+                                  TestProportion = 0.2,
                                   TailN,
                                   ErrorThreshold,
                                   VarThreshold,
@@ -10,6 +11,12 @@ SelectorSimulationFunc = function(dat,
   
   ### Validation ###
   ValidationFunc(SelectorType, ModelType)
+  
+  ### Train Test Split ###
+  TestSize = floor(TestProportion * nrow(dat))
+  TrainingIndices = sample(seq_len(nrow(dat)), size = nrow(dat) - TestSize)
+  dat = dat[TrainingIndices,]
+  TestSet = dat[-TrainingIndices,]
   
   ### Progress Bar ###
   pb = txtProgressBar(min = 0, 
@@ -26,13 +33,16 @@ SelectorSimulationFunc = function(dat,
     ## Progress Bar ##
     setTxtProgressBar(pb, iter)
     
-    ## Model ##
+    ## Train Model ##
     ModelTypeSwitchResults = ModelTypeSwitchFunc(TrainingSet, ModelType)
-    PredictedLabels = ModelTypeSwitchResults$PredictedLabels
-    LabelProbabilities = ModelTypeSwitchResults$LabelProbabilities
+    Model = ModelTypeSwitchResults$Model
+    # PredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
+    # LabelProbabilities = ModelTypeSwitchResults$TrainingLabelProbabilities
     
-    ### Eror and Stopping Criteria ###    
-    Error[iter] = mean(PredictedLabels != TrainingSet$Y)
+    ### Error and Stopping Criteria ### 
+    TestErroResults = TestErrorFunction(Model, ModelType, TestSet)
+    LabelProbabilities = TestErroResults$TestPredictedProbabilities
+    Error[iter] = TestErroResults$Error
     if(iter > TailN){if(is.null(StopIter)){StopIter = StoppingCriteriaFunc(ErrorVector = Error[1:iter], 
                                                                            ErrorThreshold = ErrorThreshold, 
                                                                            VarThreshold = VarThreshold, 
@@ -40,7 +50,8 @@ SelectorSimulationFunc = function(dat,
     
     ### Selector ###
     SelectorDataSets = SelectorTypeSwitchFunc(SelectorType = SelectorType, 
-                                              SelectorN = SelectorN, 
+                                              SelectorN = SelectorN,
+                                              TestSet = TestSet,
                                               TrainingSet = TrainingSet, 
                                               CandidateSet = CandidateSet, 
                                               LabelProbabilities = LabelProbabilities)
@@ -53,16 +64,7 @@ SelectorSimulationFunc = function(dat,
   close(pb)
   end_time = Sys.time()
   run_time = end_time - start_time
-  
-  # ErrorScatterPlot = ggplot() +
-  #   geom_line(mapping = aes(x = 1:length(Error), y = Error)) + 
-  #   geom_vline(xintercept = StopIter, color = "red") + 
-  #   geom_hline(yintercept = Error[StopIter], color = "black", linetype = "dotted", alpha = 0.4) + 
-  #   annotate("text", x = StopIter, y = max(Error), label = StopIter) + 
-  #   annotate("text", x = 0, y = Error[StopIter], label = round(Error[StopIter],3)) + 
-  #   ggtitle(paste0("Selector type: ", SelectorType))
-  
-  
+
   return(list(Error = Error,
               StopIter = StopIter,
               SelectorType = SelectorType,

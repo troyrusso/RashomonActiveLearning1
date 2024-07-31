@@ -13,40 +13,49 @@
 ModelTypeSwitchFunc = function(TrainingSet, ModelType){
   switch(ModelType,
        Logistic = {
+         
+         # Model and Prediction #
          Model = glm(Y ~ ., 
                      data = TrainingSet[, setdiff(names(TrainingSet), c("ID"))],
                      family = "binomial")
-         PredictedLabels = 1*(predict(Model, 
+         TrainingPredictedLabels = 1*(predict(Model, 
                                       newdata = TrainingSet, 
                                       type = "response")>0.5)+1
-         LabelProbabilities = as.matrix(predict(Model, 
+         TrainingLabelProbabilities = as.matrix(predict(Model, 
                                                 newdata = TrainingSet, 
                                                 type = "response"))
-         LabelProbabilities = cbind(ID = as.numeric(rownames(LabelProbabilities)),
-                                    Class1 = LabelProbabilities[,1], 
-                                    Class2 = 1-LabelProbabilities[,1])
+         TrainingLabelProbabilities = cbind(ID = as.numeric(rownames(TrainingLabelProbabilities)),
+                                    Class1 = TrainingLabelProbabilities[,1],
+                                    Class2 = 1-TrainingLabelProbabilities[,1])
        },
        LASSO = {
          # Best Lambda #
-         LassoRegression = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y"))]),
+         LassoRegression = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y", "ID"))]),
                                   y = as.matrix(TrainingSet$Y),
                                   alpha = 1,
                                   family = "binomial")
          MinLambda = min(LassoRegression$lambda)
          
-         # Prediction #
-         LabelProbabilities = predict(LassoRegression,
-                                      newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y"))]),
+         # Model and Prediction #
+         Model = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
+                        y = as.matrix(TrainingSet$Y),
+                        alpha = 1,
+                        lambda = MinLambda,
+                        family = "binomial")
+         
+         TrainingLabelProbabilities = predict(Model,
+                                      newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
                                       s = MinLambda,
                                       type = "response")
-         PredictedLabels = ifelse(LabelProbabilities > 0.5,1,0)+1
-         LabelProbabilities = cbind(ID = as.numeric(rownames(LabelProbabilities)),
-                                    Class1 = LabelProbabilities[,1], 
-                                    Class2 = 1-LabelProbabilities[,1])
+         TrainingPredictedLabels = ifelse(TrainingLabelProbabilities > 0.5,1,0)+1
+         TrainingLabelProbabilities = cbind(ID = as.numeric(rownames(TrainingLabelProbabilities)),
+                                    Class1 = TrainingLabelProbabilities[,1],
+                                    Class2 = 1-TrainingLabelProbabilities[,1])
        }
        
   )
   
-  return(list(PredictedLabels = PredictedLabels,
-              LabelProbabilities = LabelProbabilities))
+  return(list(Model = Model,
+              TrainingPredictedLabels = TrainingPredictedLabels,
+              TrainingLabelProbabilities = TrainingLabelProbabilities))
   }
