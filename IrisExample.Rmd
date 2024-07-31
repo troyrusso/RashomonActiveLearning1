@@ -39,20 +39,24 @@ rm(list=ls())
 
 ```{r}
 dir = "/Users/simondn/Documents/RashomonActiveLearning/"
+source(paste0(dir,"functions/ActiveLearningPlot.R"))
 source(paste0(dir,"functions/BreakingTiesSelector.R"))
 source(paste0(dir,"functions/GenerateData.R"))
 source(paste0(dir,"functions/GenerateData2.R"))
+source(paste0(dir,"functions/ModelTypeSwitch.R"))
 source(paste0(dir,"functions/RandomStart.R"))
 source(paste0(dir,"functions/RandomSelector.R"))
 source(paste0(dir,"functions/SelectorSimulationFunc.R"))
+source(paste0(dir,"functions/SelectorTypeSwitch.R"))
 source(paste0(dir,"functions/StoppingCriteria.R"))
+source(paste0(dir,"functions/Validation.R"))
 ```
 
 # Generate Data
 
 ## Data
 ```{r}
-set.seed(2)
+set.seed(1)
 data(GermanCredit)
 GermanCredit = GermanCredit %>% 
   mutate(ID = 1:nrow(GermanCredit),
@@ -123,21 +127,21 @@ CandidateSet = RandomStart$CandidateSet
 ```{r}
 dat = GermanCredit
 TailN = 20
-ErrorThreshold = 0.2
+ErrorThreshold = 0.25
 VarThreshold = .1
 TrainingSet = TrainingSet
 CandidateSet = CandidateSet
 SelectorN = 1
 
-# dat = dat
-# TailN = TailN
-# ErrorThreshold = ErrorThreshold
-# VarThreshold = VarThreshold
-# TrainingSet = TrainingSet
-# CandidateSet = CandidateSet
-# SelectorType = "Random"
-# SelectorN = 1
-# ModelType = "LASSO"
+dat = dat
+TailN = TailN
+ErrorThreshold = ErrorThreshold
+VarThreshold = VarThreshold
+TrainingSet = TrainingSet
+CandidateSet = CandidateSet
+SelectorType = "Random"
+SelectorN = 1
+ModelType = "LASSO"
 ```
 
 
@@ -152,7 +156,7 @@ SelectorSimulationFunc(dat = dat,
                        CandidateSet = CandidateSet,
                        SelectorType = "Random",
                        SelectorN = 1,
-                       ModelType = "Logistic") -> SimResultsRandom
+                       ModelType = "LASSO") -> SimResultsRandom
 
 SelectorSimulationFunc(dat = dat,
                        TailN = TailN,
@@ -162,13 +166,25 @@ SelectorSimulationFunc(dat = dat,
                        CandidateSet = CandidateSet,
                        SelectorType = "BreakingTies",
                        SelectorN = 1,
-                       ModelType = "Logistic") -> SimResultsBreakingTies
+                       ModelType = "LASSO") -> SimResultsBreakingTies
 ```
 
 ```{r}
-SimResultsRandom$ErrorScatterPlot
-SimResultsBreakingTies$ErrorScatterPlot
+ActiveLearningPlotFunc(Error = SimResultsRandom$Error,
+                       StopIter = SimResultsRandom$StopIter,
+                       SelectorType = SimResultsRandom$SelectorType) -> RandomPlot
+
+ActiveLearningPlotFunc(Error = SimResultsBreakingTies$Error,
+                       StopIter = SimResultsBreakingTies$StopIter,
+                       SelectorType = SimResultsBreakingTies$SelectorType) -> BreakingTiesPlot
 ```
+
+
+```{r}
+RandomPlot
+BreakingTiesPlot
+```
+
 ```{r}
 LineTypes = c("Random" = "dashed",
               "BreakingTies" = "solid")
@@ -190,9 +206,7 @@ ErrorScatterPlot = ggplot() +
     xlab("Iterations") +
     ylab("Error") +
     ggtitle("Simulation by Error") +
-    theme(plot.title = element_text(size = 15, hjust = 0.5)) +
-  xlim(0,200)
-
+    theme(plot.title = element_text(size = 15, hjust = 0.5))
 ErrorScatterPlot
 
 ```
