@@ -38,13 +38,18 @@ rm(list=ls())
 
 ```{r}
 dir = "/Users/simondn/Documents/RashomonActiveLearning/"
+source(paste0(dir,"functions/ActiveLearningPlot.R"))
 source(paste0(dir,"functions/BreakingTiesSelector.R"))
 source(paste0(dir,"functions/GenerateData.R"))
 source(paste0(dir,"functions/GenerateData2.R"))
-source(paste0(dir,"functions/RandomStart.R"))
+source(paste0(dir,"functions/ModelTypeSwitch.R"))
 source(paste0(dir,"functions/RandomSelector.R"))
+source(paste0(dir,"functions/RandomStart.R"))
 source(paste0(dir,"functions/SelectorSimulationFunc.R"))
+source(paste0(dir,"functions/SelectorTypeSwitch.R"))
 source(paste0(dir,"functions/StoppingCriteria.R"))
+source(paste0(dir,"functions/TestError.R"))
+source(paste0(dir,"functions/Validation.R"))
 ```
 
 # Generate Data
@@ -194,6 +199,7 @@ CandidateSet = RandomStart$CandidateSet
 
 ```{r}
 dat = dat
+TestProportion = 0.2
 TailN = 50
 ErrorThreshold = 0.4
 VarThreshold = .1
@@ -205,16 +211,19 @@ SelectorN = 1
 
 ```{r}
 SelectorSimulationFunc(dat = dat,
+                       TestProportion = 0.2,
                        TailN = TailN,
                        ErrorThreshold = ErrorThreshold,
                        VarThreshold = VarThreshold,
                        TrainingSet = TrainingSet,
                        CandidateSet = CandidateSet,
                        SelectorType = "Random",
-                       SelectorN = 1) -> SimResultsRandom
+                       SelectorN = 1,
+                       ModelType = "Logistic") -> SimResultsRandom
 
 SelectorSimulationFunc(dat = dat,
                        TailN = TailN,
+                       TestProportion = 0.2
                        ErrorThreshold = ErrorThreshold,
                        VarThreshold = VarThreshold,
                        TrainingSet = TrainingSet,
