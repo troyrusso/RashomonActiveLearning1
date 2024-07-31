@@ -57,16 +57,16 @@ set.seed(3)
 N = 1000
 K = 2
 NClass = 2
-ClassProportion = c(1/3,2/3)
-# ClassProportion = rep(1/NClass, NClass)
+# ClassProportion = c(1/3,2/3)
+ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
 CorrVal = 0.0
 ```
 
 ```{r}
 ### Data ###
-# DGPResults = GenerateDataFunc(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
-DGPResults = GenerateDataFunc2(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
+DGPResults = GenerateDataFunc(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
+# DGPResults = GenerateDataFunc2(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
 dat = DGPResults$dat
 YStar = DGPResults$YStar
 TrueBetas = DGPResults$TrueBetas
@@ -133,29 +133,53 @@ mean(MultinomModelPredicted != dat$Y)
 ```
 
 ## LASSO
+
 ```{r}
-# ### Lambda ###
-# CVLasso = cv.glmnet(x=as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
-#                     y=as.matrix(dat[, "Label"]), 
+# Model #
+# X = as.matrix(dat[,c(3,4)])
+# Y = as.factor(dat[,2])
+# 
+# LASSO_Regression = glmnet(x = X, 
+#                           y = Y,
+#                           alpha = 1,
+#                           family = "binomial")
+# LASSO_Lambda = min(LASSO_Regression$lambda)
+# 
+# # Training Prediction #
+# LASSO_Training_Prediction = predict(LASSO_Regression, 
+#                                     newx = X, 
+#                                     s = LASSO_Lambda,
+#                                     type = "response")
+# hist(LASSO_Training_Prediction)
+# 
+# mean((LASSOTrainingPrediction+1) != dat$Y)
+
+```
+
+
+```{r}
+### Lambda ###
+# CVLasso = cv.glmnet(x= as.matrix(dat[, setdiff(names(dat), c("ID", "Y"))]),
+#                     y= as.factor(as.matrix(dat[, "Y"])),
 #                     alpha = 1,
-#                     type.measure = "class",
 #                     family = "binomial")
 # LASSOLambda = CVLasso$lambda.min
 # 
 # # Training Prediction #
-# LASSOTrainingPrediction = glmnet(x=as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
-#                                  y=as.matrix(dat[, "Label"]), 
+# LASSOTrainingPrediction = glmnet(x=as.matrix(dat[, setdiff(names(dat), c("ID", "Y"))]),
+#                                  y= as.factor(as.matrix(dat[, "Y"])),
 #                                  alpha = 1,
 #                                  lambda = LASSOLambda,
 #                                  family = "binomial")
 # 
-# LASSOTrainingPrediction = predict(LASSOTrainingPrediction, 
-#                                   newx = as.matrix(dat[, setdiff(names(dat), c("ID", "Label", "Y"))]), 
+# LASSOTrainingPrediction = predict(LASSOTrainingPrediction,
+#                                   newx = as.matrix(dat[, setdiff(names(dat), c("ID", "Y"))]),
 #                                   s = LASSOLambda,
-#                                   type = "response")[,1]
+#                                   type = "response")
+# 
 # LASSOTrainingPrediction =  ifelse(LASSOTrainingPrediction > 0.5,1,0)
 # 
-# mean((LASSOTrainingPrediction+1) != dat$Label)
+# mean((LASSOTrainingPrediction+1) != dat$Y)
 ```
 
 ## Random Selection
@@ -171,7 +195,7 @@ CandidateSet = RandomStart$CandidateSet
 ```{r}
 dat = dat
 TailN = 50
-ErrorThreshold = 0.15
+ErrorThreshold = 0.4
 VarThreshold = .1
 TrainingSet = TrainingSet
 CandidateSet = CandidateSet
@@ -198,7 +222,10 @@ SelectorSimulationFunc(dat = dat,
                        SelectorType = "BreakingTies",
                        SelectorN = 1) -> SimResultsBreakingTies
 ```
-
+```{r}
+SimResultsRandom$ErrorScatterPlot
+SimResultsBreakingTies$ErrorScatterPlot
+```
 ```{r}
 LineTypes = c("Random" = "dashed",
          "BreakingTies" = "solid")
@@ -220,13 +247,9 @@ ErrorScatterPlot = ggplot() +
     xlab("Iterations") +
     ylab("Error") +
     ggtitle("Simulation by Error") +
-    theme(plot.title = element_text(size = 15, hjust = 0.5))
+    theme(plot.title = element_text(size = 15, hjust = 0.5)) +
+  xlim(0,200)
 
 ErrorScatterPlot
 
-```
-
-```{r}
-SimResultsRandom$ErrorScatterPlot
-SimResultsBreakingTies$ErrorScatterPlot
 ```

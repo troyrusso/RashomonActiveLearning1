@@ -1,26 +1,35 @@
 ### Summary: Randomly selects data until there is one of each class
 ### Inputs:
-# InitialN: Number of observations to sample at each iteartion
+# InitialN: Number of observations in each class
 # dat: data set
 ### Output:
 # dat: A training set and a candidate set
 
 RandomStartFunc = function(InitialN = 1, dat){
   
+
   ### Set Up ###
+  SampleN = 1 # Number of observations to sample at each observation
   N = nrow(dat)
   Classes = sort(unique(dat$Y))
 
-  TrainingIndices = sample(1:N, InitialN)
+
+  TrainingIndices = sample(1:N, SampleN)
   CandidateIndices = setdiff(1:N, TrainingIndices)
   TrainingSet = dat[TrainingIndices, ]
   CandidateSet = dat[CandidateIndices, ]
   
+  ### CountPerClass
+  CountPerClass <- function(dat, Classes) {
+    sapply(Classes, function(cls) sum(dat$Y == cls))
+  }
+  
+
   ### While Loop ###
-  while(length(unique(TrainingSet$Y)) != length(Classes)){
+  while(any(CountPerClass(TrainingSet, Classes) < InitialN)){
     
     ## Draw ##
-    TrainingIndices = c(TrainingIndices, sample(CandidateIndices, InitialN))
+    TrainingIndices = c(TrainingIndices, sample(CandidateIndices, SampleN))
     CandidateIndices = setdiff(CandidateIndices, TrainingIndices)
     TrainingSet = dat[TrainingIndices, ]
     CandidateSet = dat[CandidateIndices, ]

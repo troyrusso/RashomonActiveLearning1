@@ -32,11 +32,22 @@ BreakingTiesSelectorFunc = function(ClassProbabilities, TrainingSet, CandidateSe
   #   as.matrix)[,1] -> DistMatrix
   # sort(DistMatrix,partial=length(DistMatrix)-1)[length(DistMatrix)-1]
 
+  # print(c(nrow(TrainingSet),nrow(CandidateSet)))
+  
   VarCovMatrix = cov(rbind(MostUncertainObs,
                            CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "MalDistance"))]))
-  CandidateSet$MalDistance = stats::mahalanobis(x = as.matrix(CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y" , "MalDistance"))]),
-                                                center = as.matrix(MostUncertainObs),
-  cov = VarCovMatrix)
+    MalDistance = try(stats::mahalanobis(x = as.matrix(CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y" , "MalDistance"))]),
+                                         center = as.matrix(MostUncertainObs),  
+                                         cov = VarCovMatrix),
+                  silent = TRUE)
+    
+    if(inherits(MalDistance, 'try-error')){
+      return(list(TrainingSet = TrainingSet,
+                  CandidateSet = CandidateSet))
+    }else{
+      CandidateSet$MalDistance = MalDistance
+    }
+
   
   ### Matched Candidate Data ###
   MatchedCandidateRowNum = sort(CandidateSet$MalDistance,index.return = TRUE)$ix[1:SelectorN]

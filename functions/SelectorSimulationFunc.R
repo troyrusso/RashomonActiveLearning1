@@ -5,10 +5,14 @@ SelectorSimulationFunc = function(dat,
                                   TrainingSet,
                                   CandidateSet,
                                   SelectorType,
-                                  SelectorN){
+                                  SelectorN,
+                                  ModelType){
   
   ### Validation ###
   if(!(SelectorType %in% c("Random", "BreakingTies"))){
+    stop("SelectorType has to be Random or BreakingTies")
+  }
+  if(!(ModelType %in% c("Logistic", "LASSO"))){
     stop("SelectorType has to be Random or BreakingTies")
   }
   
@@ -25,7 +29,6 @@ SelectorSimulationFunc = function(dat,
   Error = numeric(nrow(CandidateSet))
   StopIter = NULL
   for(iter in 1:nrow(CandidateSet)){
-    
     ## Progress Bar ##
     setTxtProgressBar(pb, iter)
     
@@ -38,21 +41,45 @@ SelectorSimulationFunc = function(dat,
     #                                  newdata = TrainingSet)
     # Error[iter] = mean(MultinomModelPredicted != TrainingSet$Y)
     
-    # Logistic #
-    LogisticModel = glm(Y ~ ., 
-                        data = TrainingSet[, setdiff(names(TrainingSet), c("ID"))],
-                        family = "binomial")
-    LogisticPredicted = 1*(predict(LogisticModel, newdata = TrainingSet, type = "response")>0.5)+1
-    LogPredictedProbabilities = as.matrix(predict(LogisticModel, newdata = TrainingSet, type = "response"))
-    LogPredictedProbabilities = cbind(ID = as.numeric(rownames(LogPredictedProbabilities)),
-                                      Class1 = LogPredictedProbabilities[,1], 
-                                      Class2 = 1-LogPredictedProbabilities[,1])
-    
-    
+    switch(ModelType,
+           Logistic = {
+             Model = glm(Y ~ ., 
+                         data = TrainingSet[, setdiff(names(TrainingSet), c("ID"))],
+                         family = "binomial")
+             PredictedLabels = 1*(predict(Model, 
+                                          newdata = TrainingSet, 
+                                          type = "response")>0.5)+1
+             LabelProbabilities = as.matrix(predict(Model, 
+                                                    newdata = TrainingSet, 
+                                                    type = "response"))
+             LabelProbabilities = cbind(ID = as.numeric(rownames(LabelProbabilities)),
+                                               Class1 = LabelProbabilities[,1], 
+                                               Class2 = 1-LabelProbabilities[,1])
+           },
+           LASSO = {
+             # Best Lambda #
+             LassoRegression = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y"))]),
+                                      y = as.matrix(TrainingSet$Y),
+                                      alpha = 1,
+                                      family = "binomial")
+             MinLambda = min(LassoRegression$lambda)
+             
+             # Prediction #
+             LabelProbabilities = predict(LassoRegression,
+                                               newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y"))]),
+                                               s = MinLambda,
+                                               type = "response")
+             PredictedLabels = ifelse(LabelProbabilities > 0.5,1,0)+1
+             LabelProbabilities = cbind(ID = as.numeric(rownames(LabelProbabilities)),
+                                        Class1 = LabelProbabilities[,1], 
+                                        Class2 = 1-LabelProbabilities[,1])
+           }
+           
+           )
     
     
     ### Eror and Stopping Criteria ###    
-    Error[iter] = mean(LogisticPredicted != TrainingSet$Y)
+    Error[iter] = mean(PredictedLabels != TrainingSet$Y)
     if(iter > TailN){if(is.null(StopIter)){StopIter = StoppingCriteriaFunc(ErrorVector = Error[1:iter], 
                                                                            ErrorThreshold = ErrorThreshold, 
                                                                            VarThreshold = VarThreshold, 
@@ -63,7 +90,7 @@ SelectorSimulationFunc = function(dat,
            Random = {
              SelectorDataSets = RandomSelectorFunc(SelectorN = SelectorN, TrainingSet, CandidateSet)},
            BreakingTies = {
-             SelectorDataSets = BreakingTiesSelectorFunc(ClassProbabilities = LogPredictedProbabilities,
+             SelectorDataSets = BreakingTiesSelectorFunc(ClassProbabilities = LabelProbabilities,
                                                     TrainingSet = TrainingSet,
                                                     CandidateSet = CandidateSet,
                                                     SelectorN = SelectorN)})
@@ -84,12 +111,11 @@ SelectorSimulationFunc = function(dat,
     geom_hline(yintercept = Error[StopIter], color = "black", linetype = "dotted", alpha = 0.4) + 
     annotate("text", x = StopIter, y = max(Error), label = StopIter) + 
     annotate("text", x = 0, y = Error[StopIter], label = round(Error[StopIter],3)) + 
-    ggtitle(paste0("Selector type:", SelectorType))
+    ggtitle(paste0("Selector type: ", SelectorType))
   
   
   return(list(Error = Error,
               StopIter = StopIter,
               ErrorScatterPlot = ErrorScatterPlot,
               run_time = run_time))
-  
 }
