@@ -41,6 +41,7 @@ rm(list=ls())
 dir = "/Users/simondn/Documents/RashomonActiveLearning/"
 source(paste0(dir,"functions/ActiveLearningPlot.R"))
 source(paste0(dir,"functions/BreakingTiesSelector.R"))
+source(paste0(dir,"functions/ClassErrorPlot.R"))
 source(paste0(dir,"functions/GenerateData.R"))
 source(paste0(dir,"functions/GenerateData2.R"))
 source(paste0(dir,"functions/ModelTypeSwitch.R"))
@@ -48,6 +49,7 @@ source(paste0(dir,"functions/RandomSelector.R"))
 source(paste0(dir,"functions/RandomStart.R"))
 source(paste0(dir,"functions/SelectorSimulationFunc.R"))
 source(paste0(dir,"functions/SelectorTypeSwitch.R"))
+source(paste0(dir,"functions/SelectorTypeComparisonPlotFunc.R"))
 source(paste0(dir,"functions/StoppingCriteria.R"))
 source(paste0(dir,"functions/TestError.R"))
 source(paste0(dir,"functions/Validation.R"))
@@ -57,7 +59,7 @@ source(paste0(dir,"functions/Validation.R"))
 
 ## Data
 ```{r}
-set.seed(2)
+# set.seed(1)
 data(GermanCredit)
 GermanCredit = GermanCredit %>% 
   mutate(ID = 1:nrow(GermanCredit),
@@ -78,100 +80,42 @@ GermanCredit = GermanCredit %>%
          ForeignWorker)
 ```
 
-# Model
-
-## Logistic
-```{r}
-LogModel = glm(Y ~ ., 
-               data = GermanCredit,
-               family = "binomial")
-LogPredicted = 1*(predict(LogModel, newdata = GermanCredit, type = "response")>0.5)
-LogPredictedProbabilities = predict(LogModel,
-                                    newdata = GermanCredit,
-                                    type = "response")
-mean(LogPredicted == GermanCredit$Y)
-```
-
-
-## LASSO
+# Simulation
 
 ```{r}
-# Model #
-LASSO_Regression = glmnet(x = as.matrix(GermanCredit[, setdiff(names(GermanCredit), c("Y"))]),
-                          y = as.matrix(GermanCredit$Y),
-                          alpha = 1,
-                          family = "binomial")
-LASSO_Lambda = min(LASSO_Regression$lambda)
-
-# Training Prediction #
-LASSOTrainingPrediction = predict(LASSO_Regression,
-                                    newx = as.matrix(GermanCredit[, setdiff(names(GermanCredit), c("Y"))]),
-                                    s = LASSO_Lambda,
-                                    type = "response")
-LASSOTrainingPrediction = ifelse(LASSOTrainingPrediction > 0.5,1,0)+1
-
-mean(LASSOTrainingPrediction != GermanCredit$Y)
-
-```
-
-
-## Random Selection
-
-```{r}
-RandomStart = RandomStartFunc(InitialN=10, dat=GermanCredit)
-TrainingSet = RandomStart$TrainingSet
-CandidateSet = RandomStart$CandidateSet
-```
-
-## Simulation
-
-```{r}
+seed = 1
 dat = GermanCredit
 TailN = 30
 TestProportion = 0.2
 ErrorThreshold = 0.25
 VarThreshold = .1
-TrainingSet = TrainingSet
-CandidateSet = CandidateSet
 SelectorN = 1
-
-dat = dat
-TailN = TailN
-TestProportion = 0.2
-ErrorThreshold = ErrorThreshold
-VarThreshold = VarThreshold
-TrainingSet = TrainingSet
-CandidateSet = CandidateSet
-SelectorType = "Random"
-SelectorN = 1
+InitialN = 10
 ModelType = "LASSO"
 ```
 
-
-Works for LASSO but not Logistic - TestPredictedProbabilities gives a different length of predictions.
-
 ```{r warning=FALSE}
 SelectorSimulationFunc(dat = dat,
-                       TestProportion = 0.2,
+                       TestProportion = TestProportion,
                        TailN = TailN,
                        ErrorThreshold = ErrorThreshold,
                        VarThreshold = VarThreshold,
-                       TrainingSet = TrainingSet,
-                       CandidateSet = CandidateSet,
                        SelectorType = "Random",
-                       SelectorN = 1,
-                       ModelType = "LASSO") -> SimResultsRandom
+                       SelectorN = SelectorN,
+                       ModelType = ModelType,
+                       InitialN = InitialN,
+                       seed = seed) -> SimResultsRandom
 
 SelectorSimulationFunc(dat = dat,
-                       TestProportion = 0.2,
+                       TestProportion = TestProportion,
                        TailN = TailN,
                        ErrorThreshold = ErrorThreshold,
                        VarThreshold = VarThreshold,
-                       TrainingSet = TrainingSet,
-                       CandidateSet = CandidateSet,
                        SelectorType = "BreakingTies",
-                       SelectorN = 1,
-                       ModelType = "LASSO") -> SimResultsBreakingTies
+                       SelectorN = SelectorN,
+                       ModelType = ModelType,
+                       InitialN = InitialN,
+                       seed = seed) -> SimResultsBreakingTies
 ```
 
 ```{r}
@@ -182,36 +126,94 @@ ActiveLearningPlotFunc(Error = SimResultsRandom$Error,
 ActiveLearningPlotFunc(Error = SimResultsBreakingTies$Error,
                        StopIter = SimResultsBreakingTies$StopIter,
                        SelectorType = SimResultsBreakingTies$SelectorType) -> BreakingTiesPlot
-```
 
+SelectorTypeComparisonPlotFunc(SimResultsRandom,SimResultsBreakingTies) -> SelectorTypeComparisonPlot
+
+ClassErrorPlotFunc(SimResultsBreakingTies) -> ClassErrorPlotBreakingTies
+ClassErrorPlotFunc(SimResultsRandom) -> ClassErrorPlotRandom
+```
 
 ```{r}
 RandomPlot
 BreakingTiesPlot
+SelectorTypeComparisonPlot
+ClassErrorPlotBreakingTies
+ClassErrorPlotRandom
 ```
+
+
+
 
 ```{r}
-LineTypes = c("Random" = "dashed",
-              "BreakingTies" = "solid")
+### Set Up ###
+dat = GermanCredit
+TailN = 30
+TestProportion = 0.2
+ErrorThreshold = 0.25
+VarThreshold = .1
+SelectorN = 1
+InitialN = 10
+ModelType = "LASSO"
 
-ErrorScatterPlot = ggplot() +
-    geom_line(mapping = aes(x = 1:length(SimResultsRandom$Error), 
-                            y = SimResultsRandom$Error,
-                            linetype = "Random")) + 
-    geom_line(mapping = aes(x = 1:length(SimResultsBreakingTies$Error), 
-                            y = SimResultsBreakingTies$Error,
-                            linetype = "BreakingTies")) + 
-    geom_vline(xintercept = SimResultsRandom$StopIter, 
-               color = "red",
-               linetype = "dashed") + 
-    geom_vline(xintercept = SimResultsBreakingTies$StopIter, 
-               color = "red",
-               linetype = "solid") +
-# Aesthetics
-    xlab("Iterations") +
-    ylab("Error") +
-    ggtitle("Simulation by Error") +
-    theme(plot.title = element_text(size = 15, hjust = 0.5))
-ErrorScatterPlot
+NSeed = 50
+SimulationRandomModels = vector('list', NSeed)
+SimulationBreakingTiesModels = vector('list', NSeed)
+MyPlots = vector('list', NSeed)
 
+### Iteration ###
+for(SeedIter in 1:NSeed){
+  
+  print(SeedIter)
+  
+  ### Random Simulation ###
+  SelectorSimulationFunc(dat = dat,
+                       TestProportion = TestProportion,
+                       TailN = TailN,
+                       ErrorThreshold = ErrorThreshold,
+                       VarThreshold = VarThreshold,
+                       SelectorType = "Random",
+                       SelectorN = SelectorN,
+                       ModelType = ModelType,
+                       InitialN = InitialN,
+                       seed = SeedIter) -> SimulationRandomModels[[SeedIter]]
+  
+  ### Breaking Ties Simulation ###
+  SelectorSimulationFunc(dat = dat,
+                       TestProportion = TestProportion,
+                       TailN = TailN,
+                       ErrorThreshold = ErrorThreshold,
+                       VarThreshold = VarThreshold,
+                       SelectorType = "BreakingTies",
+                       SelectorN = SelectorN,
+                       ModelType = ModelType,
+                       InitialN = InitialN,
+                       seed = SeedIter) -> SimulationBreakingTiesModels[[SeedIter]]
+  
+  ### Plot ###
+  MyPlots[[SeedIter]] = SelectorTypeComparisonPlotFunc(SimulationRandomModels[[SeedIter]],
+                                                       SimulationBreakingTiesModels[[SeedIter]])
+  # RandomPlot
+  # BreakingTiesPlot
+  # SelectorTypeComparisonPlot
+  # ClassErrorPlotBreakingTies
+  # ClassErrorPlotRandom
+}
 ```
+
+
+
+
+
+
+```{r}
+for(i in 1:NSeed){
+  print(MyPlots[[i]])
+}
+```
+
+
+
+
+
+
+

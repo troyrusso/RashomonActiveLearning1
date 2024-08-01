@@ -3,11 +3,13 @@ SelectorSimulationFunc = function(dat,
                                   TailN,
                                   ErrorThreshold,
                                   VarThreshold,
-                                  TrainingSet,
-                                  CandidateSet,
                                   SelectorType,
                                   SelectorN,
-                                  ModelType){
+                                  ModelType,
+                                  InitialN,
+                                  seed){
+  ### Seed ###
+  set.seed(seed)
   
   ### Validation ###
   ValidationFunc(SelectorType, ModelType)
@@ -18,6 +20,19 @@ SelectorSimulationFunc = function(dat,
   dat = dat[TrainingIndices,]
   TestSet = dat[-TrainingIndices,]
   
+  ### Random Start ###
+  RandomStart = RandomStartFunc(InitialN=InitialN, dat=dat)
+  TrainingSet = RandomStart$TrainingSet
+  CandidateSet = RandomStart$CandidateSet
+  
+  ### Set Up ###
+  NClass = length(unique(TestSet$Y))
+  Error = numeric(nrow(CandidateSet))
+  ClassError = matrix(nrow = nrow(CandidateSet),
+                      ncol = NClass)
+  colnames(ClassError) = paste0("Class", 1:NClass)
+  StopIter = NULL
+  
   ### Progress Bar ###
   pb = txtProgressBar(min = 0, 
                       max = nrow(CandidateSet),
@@ -27,8 +42,6 @@ SelectorSimulationFunc = function(dat,
   start_time = Sys.time()
   
   ### Simulation ###
-  Error = numeric(nrow(CandidateSet))
-  StopIter = NULL
   for(iter in 1:nrow(CandidateSet)){
     ## Progress Bar ##
     setTxtProgressBar(pb, iter)
@@ -40,9 +53,10 @@ SelectorSimulationFunc = function(dat,
     # LabelProbabilities = ModelTypeSwitchResults$TrainingLabelProbabilities
     
     ### Error and Stopping Criteria ### 
-    TestErroResults = TestErrorFunction(Model, ModelType, TestSet)
-    LabelProbabilities = TestErroResults$TestPredictedProbabilities
-    Error[iter] = TestErroResults$Error
+    TestErrorResults = TestErrorFunction(Model, ModelType, TestSet)
+    LabelProbabilities = TestErrorResults$TestPredictedProbabilities
+    Error[iter] = TestErrorResults$Error
+    ClassError[iter,] = TestErrorResults$ClassError
     if(iter > TailN){if(is.null(StopIter)){StopIter = StoppingCriteriaFunc(ErrorVector = Error[1:iter], 
                                                                            ErrorThreshold = ErrorThreshold, 
                                                                            VarThreshold = VarThreshold, 
@@ -66,6 +80,7 @@ SelectorSimulationFunc = function(dat,
   run_time = end_time - start_time
 
   return(list(Error = Error,
+              ClassError = ClassError,
               StopIter = StopIter,
               SelectorType = SelectorType,
               run_time = run_time))
