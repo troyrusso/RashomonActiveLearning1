@@ -1,25 +1,25 @@
-SelectorSimulationFunc = function(dat,
-                                  TestProportion = 0.2,
-                                  TailN,
-                                  ErrorThreshold,
-                                  VarThreshold,
-                                  SelectorType,
-                                  SelectorN,
-                                  ModelType,
-                                  InitialN,
-                                  seed){
+SimulationFunc = function(dat,
+                          TestProportion = 0.2,
+                          TailN,
+                          ErrorThreshold,
+                          VarThreshold,
+                          SelectorType,
+                          SelectorN,
+                          ModelType,
+                          InitialN,
+                          seed){
   ### Seed ###
   set.seed(seed)
   
   ### Validation ###
-  ValidationFunc(SelectorType, ModelType)
+  ValidationFunc(dat, SelectorType, ModelType)
   
   ### Train Test Split ###
   TestSize = floor(TestProportion * nrow(dat))
   TrainingIndices = sample(seq_len(nrow(dat)), size = nrow(dat) - TestSize)
-  dat = dat[TrainingIndices,]
   TestSet = dat[-TrainingIndices,]
-  
+  dat = dat[TrainingIndices,]
+
   ### Random Start ###
   RandomStart = RandomStartFunc(InitialN=InitialN, dat=dat)
   TrainingSet = RandomStart$TrainingSet
@@ -27,6 +27,10 @@ SelectorSimulationFunc = function(dat,
   
   ### Set Up ###
   NClass = length(unique(TestSet$Y))
+  TestSetPrediction = numeric(nrow(CandidateSet) * nrow(TestSet)) %>% 
+    matrix(nrow = nrow(CandidateSet),
+           ncol = nrow(TestSet))
+  colnames(TestSetPrediction) = rownames(TestSet)
   Error = numeric(nrow(CandidateSet))
   ClassError = matrix(nrow = nrow(CandidateSet),
                       ncol = NClass)
@@ -54,6 +58,7 @@ SelectorSimulationFunc = function(dat,
     
     ### Error and Stopping Criteria ### 
     TestErrorResults = TestErrorFunction(Model, ModelType, TestSet)
+    TestSetPrediction[iter ,] = TestErrorResults$TestPredictedLabels
     LabelProbabilities = TestErrorResults$TestPredictedProbabilities
     Error[iter] = TestErrorResults$Error
     ClassError[iter,] = TestErrorResults$ClassError
@@ -83,5 +88,6 @@ SelectorSimulationFunc = function(dat,
               ClassError = ClassError,
               StopIter = StopIter,
               SelectorType = SelectorType,
+              TestSetPrediction = TestSetPrediction,
               run_time = run_time))
 }

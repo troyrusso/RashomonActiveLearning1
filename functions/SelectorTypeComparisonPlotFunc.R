@@ -5,9 +5,15 @@
 # NEED TO WORK ON THIS MORE TO GENERALIZE #
 
 
-SelectorTypeComparisonPlotFunc = function(SimulationType1, SimulationType2){
+SelectorTypeComparisonPlotFunc = function(SimulationType1, 
+                                          SimulationType2,
+                                          xlower = NULL, 
+                                          xupper = NULL){
   
   ### Set Up ###
+  if(is.null(xlower)){xlower = 0}
+  if(is.null(xupper)){xupper = max(length(SimulationType2$Error), length(SimulationType2$Error))}
+  
   
   # Error Lines #
   JointErrors = data.frame(cbind(SimulationType1$Error, SimulationType2$Error))
@@ -40,6 +46,7 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1, SimulationType2){
                linetype = "solid") + 
     
     ## Aesthetics ##
+    xlim(xlower, xupper) + 
     xlab("Iterations") +
     ylab("Error") +
     ggtitle("Simulation by Error") +

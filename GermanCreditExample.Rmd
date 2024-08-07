@@ -1,5 +1,5 @@
 ---
-title: "Scratch Work"
+title: "German Credit Example"
 author: "Simon Dovan Nguyen"
 date: "`r Sys.Date()`"
 output:
@@ -80,7 +80,7 @@ GermanCredit = GermanCredit %>%
          ForeignWorker)
 ```
 
-# Simulation
+# One Iteration
 
 ```{r}
 seed = 1
@@ -91,7 +91,7 @@ ErrorThreshold = 0.25
 VarThreshold = .1
 SelectorN = 1
 InitialN = 10
-ModelType = "LASSO"
+ModelType = "Logistic"
 ```
 
 ```{r warning=FALSE}
@@ -119,6 +119,12 @@ SelectorSimulationFunc(dat = dat,
 ```
 
 ```{r}
+TestSetPredictionsRandom = SimResultsRandom$TestSetPrediction
+TestSetPredictionsBreakingTies = SimResultsBreakingTies$TestSetPrediction
+```
+
+
+```{r}
 ActiveLearningPlotFunc(Error = SimResultsRandom$Error,
                        StopIter = SimResultsRandom$StopIter,
                        SelectorType = SimResultsRandom$SelectorType) -> RandomPlot
@@ -134,8 +140,8 @@ ClassErrorPlotFunc(SimResultsRandom) -> ClassErrorPlotRandom
 ```
 
 ```{r}
-RandomPlot
-BreakingTiesPlot
+# RandomPlot
+# BreakingTiesPlot
 SelectorTypeComparisonPlot
 ClassErrorPlotBreakingTies
 ClassErrorPlotRandom
@@ -144,71 +150,60 @@ ClassErrorPlotRandom
 
 
 
+# Simulation
 ```{r}
-### Set Up ###
-dat = GermanCredit
-TailN = 30
-TestProportion = 0.2
-ErrorThreshold = 0.25
-VarThreshold = .1
-SelectorN = 1
-InitialN = 10
-ModelType = "LASSO"
-
-NSeed = 50
-SimulationRandomModels = vector('list', NSeed)
-SimulationBreakingTiesModels = vector('list', NSeed)
-MyPlots = vector('list', NSeed)
-
-### Iteration ###
-for(SeedIter in 1:NSeed){
-  
-  print(SeedIter)
-  
-  ### Random Simulation ###
-  SelectorSimulationFunc(dat = dat,
-                       TestProportion = TestProportion,
-                       TailN = TailN,
-                       ErrorThreshold = ErrorThreshold,
-                       VarThreshold = VarThreshold,
-                       SelectorType = "Random",
-                       SelectorN = SelectorN,
-                       ModelType = ModelType,
-                       InitialN = InitialN,
-                       seed = SeedIter) -> SimulationRandomModels[[SeedIter]]
-  
-  ### Breaking Ties Simulation ###
-  SelectorSimulationFunc(dat = dat,
-                       TestProportion = TestProportion,
-                       TailN = TailN,
-                       ErrorThreshold = ErrorThreshold,
-                       VarThreshold = VarThreshold,
-                       SelectorType = "BreakingTies",
-                       SelectorN = SelectorN,
-                       ModelType = ModelType,
-                       InitialN = InitialN,
-                       seed = SeedIter) -> SimulationBreakingTiesModels[[SeedIter]]
-  
-  ### Plot ###
-  MyPlots[[SeedIter]] = SelectorTypeComparisonPlotFunc(SimulationRandomModels[[SeedIter]],
-                                                       SimulationBreakingTiesModels[[SeedIter]])
-  # RandomPlot
-  # BreakingTiesPlot
-  # SelectorTypeComparisonPlot
-  # ClassErrorPlotBreakingTies
-  # ClassErrorPlotRandom
-}
-```
-
-
-
-
-
-
-```{r}
-for(i in 1:NSeed){
-  print(MyPlots[[i]])
-}
+# ### Set Up ###
+# dat = GermanCredit
+# TailN = 30
+# TestProportion = 0.2
+# ErrorThreshold = 0.25
+# VarThreshold = .1
+# SelectorN = 1
+# InitialN = 10
+# ModelType = "LASSO"
+# 
+# NSeed = 50
+# SimulationRandomModels = vector('list', NSeed)
+# SimulationBreakingTiesModels = vector('list', NSeed)
+# MyPlots = vector('list', NSeed)
+# 
+# ### Iteration ###
+# for(SeedIter in 1:NSeed){
+#   
+#   print(SeedIter)
+#   
+#   ### Random Simulation ###
+#   SelectorSimulationFunc(dat = dat,
+#                        TestProportion = TestProportion,
+#                        TailN = TailN,
+#                        ErrorThreshold = ErrorThreshold,
+#                        VarThreshold = VarThreshold,
+#                        SelectorType = "Random",
+#                        SelectorN = SelectorN,
+#                        ModelType = ModelType,
+#                        InitialN = InitialN,
+#                        seed = SeedIter) -> SimulationRandomModels[[SeedIter]]
+#   
+#   ### Breaking Ties Simulation ###
+#   SelectorSimulationFunc(dat = dat,
+#                        TestProportion = TestProportion,
+#                        TailN = TailN,
+#                        ErrorThreshold = ErrorThreshold,
+#                        VarThreshold = VarThreshold,
+#                        SelectorType = "BreakingTies",
+#                        SelectorN = SelectorN,
+#                        ModelType = ModelType,
+#                        InitialN = InitialN,
+#                        seed = SeedIter) -> SimulationBreakingTiesModels[[SeedIter]]
+#   
+#   ### Plot ###
+#   MyPlots[[SeedIter]] = SelectorTypeComparisonPlotFunc(SimulationRandomModels[[SeedIter]],
+#                                                        SimulationBreakingTiesModels[[SeedIter]])
+# }
+#
+# for(i in 1:NSeed){
+#   print(MyPlots[[i]])
+# }
 ```
 
 

@@ -30,8 +30,22 @@ TestErrorFunction = function(Model, ModelType, TestSet){
            TestPredictedProbabilities = cbind(ID = as.numeric(rownames(TestPredictedProbabilities)),
                                               Class1 = TestPredictedProbabilities[,1], 
                                               Class2 = 1-TestPredictedProbabilities[,1])
+         },
+         Multinomial = {
+           TestPredictedProbabilities = predict(Model,
+                                                newdata = TestSet[, setdiff(names(TestSet), c("ID"))],
+                                                type = "prob")
+           TestPredictedLabels = predict(Model,
+                                         newdata = TestSet[, setdiff(names(TestSet), c("ID"))])
+         },
+         MultinomLASSO = {
+           TestPredictedProbabilities = predict(Model,
+                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
+                                                type = "response")[,,]
+           TestPredictedLabels = predict(Model,
+                                             newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
+                                             type = "class") %>% as.factor
          }
-         
   )
   
 
@@ -44,5 +58,6 @@ TestErrorFunction = function(Model, ModelType, TestSet){
   
   return(list(Error = Error,
               ClassError = ClassError,
+              TestPredictedLabels = TestPredictedLabels,
               TestPredictedProbabilities = TestPredictedProbabilities))
 }
