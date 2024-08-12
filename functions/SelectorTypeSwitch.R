@@ -2,7 +2,8 @@
 ### Inputs:
 ### Output:
 
-SelectorTypeSwitchFunc = function(SelectorType, 
+SelectorTypeSwitchFunc = function(ModelType,
+                                  SelectorType, 
                                   SelectorN, 
                                   TestSet,
                                   TrainingSet, 
@@ -14,7 +15,8 @@ SelectorTypeSwitchFunc = function(SelectorType,
                                                  TrainingSet = TrainingSet, 
                                                  CandidateSet = CandidateSet)},
          BreakingTies = {
-           SelectorDataSets = BreakingTiesSelectorFunc(ClassProbabilities = LabelProbabilities,
+           SelectorDataSets = BreakingTiesSelectorFunc(ModelType = ModelType,
+                                                       ClassProbabilities = LabelProbabilities,
                                                        TestSet = TestSet,
                                                        TrainingSet = TrainingSet,
                                                        CandidateSet = CandidateSet,

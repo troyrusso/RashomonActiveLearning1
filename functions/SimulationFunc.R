@@ -26,6 +26,7 @@ SimulationFunc = function(dat,
   CandidateSet = RandomStart$CandidateSet
   
   ### Set Up ###
+  ModelList = vector('list', nrow(CandidateSet))
   NClass = length(unique(TestSet$Y))
   TestSetPrediction = numeric(nrow(CandidateSet) * nrow(TestSet)) %>% 
     matrix(nrow = nrow(CandidateSet),
@@ -53,6 +54,7 @@ SimulationFunc = function(dat,
     ## Train Model ##
     ModelTypeSwitchResults = ModelTypeSwitchFunc(TrainingSet, ModelType)
     Model = ModelTypeSwitchResults$Model
+    ModelList[[iter]] = Model
     # PredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
     # LabelProbabilities = ModelTypeSwitchResults$TrainingLabelProbabilities
     
@@ -68,7 +70,8 @@ SimulationFunc = function(dat,
                                                                            TailN = TailN)}}
     
     ### Selector ###
-    SelectorDataSets = SelectorTypeSwitchFunc(SelectorType = SelectorType, 
+    SelectorDataSets = SelectorTypeSwitchFunc(ModelType = ModelType,
+                                              SelectorType = SelectorType, 
                                               SelectorN = SelectorN,
                                               TestSet = TestSet,
                                               TrainingSet = TrainingSet, 
@@ -84,10 +87,12 @@ SimulationFunc = function(dat,
   end_time = Sys.time()
   run_time = end_time - start_time
 
-  return(list(Error = Error,
+  return(list(ModelList = ModelList,
+              Error = Error,
               ClassError = ClassError,
               StopIter = StopIter,
               SelectorType = SelectorType,
+              TestSet = TestSet,
               TestSetPrediction = TestSetPrediction,
               run_time = run_time))
 }

@@ -30,33 +30,29 @@ GenerateDataFunc2 = function(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
   ClassCounts[NClass] = N - sum(ClassCounts[1:(NClass-1)])
   
   ### True Betas ###
-  TrueBetas = rnorm(n = K, mean = NClass, sd = 1)
+  TrueBetas = rnorm(n = K+1, mean = NClass, sd = 1)
   
   ### Covariates ###
   X = MASS::mvrnorm(n = N,
               mu = MeanMatrix,
               Sigma = SigmaMatrix)
   epsilon = rnorm(n = N, mean = 0, sd = 1)
-  YStar = X %*% TrueBetas + epsilon
-  dat = data.frame(YStar,X)
+  YStar = TrueBetas[1] + X %*% TrueBetas[c(-1)] + epsilon
+  dat = data.frame(YStar,X, epsilon)
   
+
   ### Labels ###
   Y = rep(1:length(ClassCounts), ClassCounts)
   dat = cbind(ID = 1:N, Y = as.factor(Y), arrange(dat,YStar))
-  
-  # YStarQuantiles = quantile(YStar, 
-  #                           probs = c(0,cumsum(ClassProportion)), 
-  #                           type = 7)
-  # YStarQuantiles = YStarQuantiles + 1e-10*seq_along(YStarQuantiles)
-  # Y = cut(YStar, breaks = YStarQuantiles, labels = FALSE, include.lowest = TRUE)
-
 
   ### Return ###
-  return(list(dat = dat[,setdiff(names(dat),c("YStar"))],
-              YStar = dat$YStar,
+  return(list(YStar = dat$YStar,
+              # dat = dat[,setdiff(names(dat),c("YStar", "epsilon"))],
+              dat = dat[,setdiff(names(dat),c("epsilon"))],
               TrueBetas = TrueBetas,
-              noise = epsilon))
+              noise = dat$epsilon))
 }
+# YStar - (TrueBetas[1] + as.matrix(dat[c(3,4)]) %*% TrueBetas[c(-1)] + noise)
 
 
 # dat = dat[,setdiff(names(dat),c("YStar"))]

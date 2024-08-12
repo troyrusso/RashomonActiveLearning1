@@ -6,13 +6,12 @@
 # dat: A training set and a candidate set
 
 RandomStartFunc = function(InitialN = 1, dat){
-  
+  FMLA = paste("Y ~ ", paste0())
 
   ### Set Up ###
   SampleN = 1 # Number of observations to sample at each observation
   N = nrow(dat)
   Classes = sort(unique(dat$Y))
-
 
   TrainingIndices = sample(1:N, SampleN)
   CandidateIndices = setdiff(1:N, TrainingIndices)

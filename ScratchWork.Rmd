@@ -45,6 +45,7 @@ source(paste0(dir,"functions/ClassErrorPlot.R"))
 source(paste0(dir,"functions/GenerateData.R"))
 source(paste0(dir,"functions/GenerateData2.R"))
 source(paste0(dir,"functions/ModelTypeSwitch.R"))
+source(paste0(dir,"functions/MostUncertainObservation.R"))
 source(paste0(dir,"functions/RandomSelector.R"))
 source(paste0(dir,"functions/RandomStart.R"))
 source(paste0(dir,"functions/SimulationFunc.R"))
@@ -63,12 +64,12 @@ source(paste0(dir,"functions/Validation.R"))
 set.seed(3)
 ### Input ###
 N = 1000
-K = 20
-NClass = 3
-ClassProportion = c(1/6, 1/6, 2/3)
-# ClassProportion = rep(1/NClass, NClass)
+K = 2
+NClass = 2
+# ClassProportion = c(1/4, 3/4)
+ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
-CorrVal = 0.8
+CorrVal = 0.9
 ```
 
 ```{r}
@@ -85,79 +86,69 @@ Noise = DGPResults$noise
 ## Visualize
 
 ```{r}
-HistogramY = ggplot() +
-  geom_histogram(mapping = aes(x = YStar, color = as.factor(dat$Y)))
-  # geom_point(mapping = aes(x = Y, y = 0, color = as.factor(Label))) 
-
-ScatterPlotY = ggplot() +
-  geom_point(mapping = aes(x = YStar, y = 0, color = as.factor(dat$Y)))
-
-
-ScatterPlotX1X2 = ggplot(data = dat) +
-  geom_point(mapping = aes(x = X1, y = X2, color = as.factor(Y))) 
-
-ScatterPlotY
-HistogramY
-ScatterPlotX1X2
-```
-## Random Selection
-
-
-```{r}
-MultinomModel = multinom(Y ~ .,
-                    data = dat[, setdiff(names(dat), c("ID"))],
-                    trace = FALSE)
-
-MultinomModelPredicted = predict(MultinomModel,
-                                 newdata = dat)
-MultinomModelPredictedProbabilities = predict(MultinomModel,
-                                              newdata = dat,
-                                              type = "prob")
-mean(MultinomModelPredicted != dat$Y)
+# HistogramY = ggplot() +
+#   geom_histogram(mapping = aes(x = YStar, color = as.factor(dat$Y)))
+#   # geom_point(mapping = aes(x = Y, y = 0, color = as.factor(Label))) 
+# 
+# ScatterPlotY = ggplot() +
+#   geom_point(mapping = aes(x = YStar, y = 0, color = as.factor(dat$Y)))
+# 
+# 
+# ScatterPlotX1X2 = ggplot(data = dat) +
+#   geom_point(mapping = aes(x = X1, y = X2, color = as.factor(Y))) 
+# 
+# ScatterPlotY
+# HistogramY
+# ScatterPlotX1X2
 ```
 
-## Simulation
+# Simulation
+
+## Parameters
 
 ```{r}
-seed = 1
+seed = 2
 TailN = 50
 TestProportion = 0.2
-ErrorThreshold = 0.2
+ErrorThreshold = 1.025
 VarThreshold = .2
 SelectorN = 1
 InitialN = 10
-ModelType = "MultinomLASSO"
+ModelType = "Linear"
 ```
 
-
+## Algorithm
 ```{r}
 SimulationFunc(dat = dat,
-                       TestProportion = TestProportion,
-                       TailN = TailN,
-                       ErrorThreshold = ErrorThreshold,
-                       VarThreshold = VarThreshold,
-                       SelectorType = "Random",
-                       SelectorN = SelectorN,
-                       ModelType = ModelType,
-                       InitialN = InitialN,
-                       seed = seed) -> SimResultsRandom
+               TestProportion = TestProportion,
+               TailN = TailN,
+               ErrorThreshold = ErrorThreshold,
+               VarThreshold = VarThreshold,
+               SelectorType = "Random",
+               SelectorN = SelectorN,
+               ModelType = ModelType,
+               InitialN = InitialN,
+               seed = seed) -> SimResultsRandom
 
 SimulationFunc(dat = dat,
-                       TestProportion = TestProportion,
-                       TailN = TailN,
-                       ErrorThreshold = ErrorThreshold,
-                       VarThreshold = VarThreshold,
-                       SelectorType = "BreakingTies",
-                       SelectorN = SelectorN,
-                       ModelType = ModelType,
-                       InitialN = InitialN,
-                       seed = seed) -> SimResultsBreakingTies
+               TestProportion = TestProportion,
+               TailN = TailN,
+               ErrorThreshold = ErrorThreshold,
+               VarThreshold = VarThreshold,
+               SelectorType = "BreakingTies",
+               SelectorN = SelectorN,
+               ModelType = ModelType,
+               InitialN = InitialN,
+               seed = seed) -> SimResultsBreakingTies
 ```
 
-
+## Visualize
 ```{r}
 TestSetPredictionsRandom = SimResultsRandom$TestSetPrediction
 TestSetPredictionsBreakingTies = SimResultsBreakingTies$TestSetPrediction
+
+ModelListRandom = SimResultsRandom$ModelList
+ModelListBreakingTies = SimResultsBreakingTies$ModelList
 ```
 
 
@@ -189,3 +180,67 @@ SelectorTypeComparisonPlot
 ClassErrorPlotBreakingTies
 ClassErrorPlotRandom
 ```
+
+# Beta Comparison
+```{r}
+# # Best Lambda #
+#  LassoRegression = glmnet(x = as.matrix(dat[, setdiff(names(dat), c("Y", "ID"))]),
+#                           y = as.matrix(dat$Y),
+#                           alpha = 1,
+#                           family = "binomial")
+#  MinLambda = min(LassoRegression$lambda)
+#  
+#  # Model and Prediction #
+#  Model = glmnet(x = as.matrix(dat[, setdiff(names(dat), c("ID","Y"))]),
+#                 y = as.matrix(dat$Y),
+#                 alpha = 1,
+#                 lambda = MinLambda,
+#                 family = "binomial")
+#  
+#  TrueBetasForNow = coef(Model) %>% as.numeric
+```
+
+```{r}
+CoefModelListRandom = numeric(length = length(ModelListRandom) * length(TrueBetas)) %>%
+  matrix(nrow = length(ModelListRandom),
+         ncol = length(TrueBetas))
+CoefModelListBreakingTies = CoefModelListRandom
+DifferenceModelListRandom = numeric(length = nrow(CoefModelListRandom))
+DifferenceModelListBreakingTies = numeric(length = nrow(CoefModelListRandom))
+
+for(i in 1:length(ModelListRandom)){
+  CoefModelListRandom[i,] = as.numeric(coef(ModelListRandom[[i]]))
+  CoefModelListBreakingTies[i,] = as.numeric(coef(ModelListBreakingTies[[i]]))
+}
+```
+
+```{r}
+for(j in 1:length(ModelListRandom)){
+  DifferenceModelListRandom[j] = norm(matrix(CoefModelListRandom[j,] - TrueBetas))
+  DifferenceModelListBreakingTies[j] = norm(matrix(CoefModelListBreakingTies[j,] - TrueBetas))
+}
+
+```
+
+
+```{r}
+LowerLimit = 0
+UpperLimit = 800
+CovariateNormError = data.frame(cbind(DifferenceModelListRandom,DifferenceModelListBreakingTies)) %>% 
+    mutate(iter = 1:length(DifferenceModelListRandom)) %>%
+    pivot_longer(-iter)
+colnames(CovariateNormError) = c("iter", "SelectorType", "error")
+
+  ### Plot ###
+CovariateNormPlot = ggplot() + 
+    geom_line(data = CovariateNormError,
+              mapping = aes(x = iter, y = error, color = SelectorType))
+# +
+  # xlim(LowerLimit,UpperLimit) + 
+  # ylim(0,5)
+CovariateNormPlot
+```
+
+
+
+

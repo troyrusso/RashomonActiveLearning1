@@ -33,6 +33,7 @@ GenerateDataFunc = function(N, K, NClass, ClassProportion, MeanMatrix, CorrVal){
   TrueBetas = matrix(data = rnorm(n = K*NClass, mean = NClass, sd = 1),
                      nrow = NClass,
                      ncol = K)
+  
   # TrueBetas = 1:NClass *  TrueBetas 
   
   ### Covariates ###

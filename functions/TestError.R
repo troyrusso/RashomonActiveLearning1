@@ -45,9 +45,28 @@ TestErrorFunction = function(Model, ModelType, TestSet){
            TestPredictedLabels = predict(Model,
                                              newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
                                              type = "class") %>% as.factor
+         },
+         Linear = {
+           
+           LMPredict = predict(Model, 
+                               newdata = TestSet,
+                               se.fit =TRUE)
+           TestPredictedLabels = LMPredict$fit
+           TestPredictedProbabilities = LMPredict$se.fit
+           
+           Error = mean((TestPredictedLabels - TestSet$YStar)^2)
+           
+           ClassError = tapply(X = 1:length(TestSet$Y), # Class Error
+                               INDEX = TestSet$Y, 
+                               FUN = function(i) mean((TestPredictedLabels[i] - TestSet$YStar[i])^2)) %>%
+             as.vector
+           
+           return(list(Error = Error,
+                       ClassError = ClassError,
+                       TestPredictedLabels = TestPredictedLabels,
+                       TestPredictedProbabilities = TestPredictedProbabilities))
          }
   )
-  
 
   ### Error ###
   Error = mean(TestPredictedLabels != TestSet$Y) # Overall Error

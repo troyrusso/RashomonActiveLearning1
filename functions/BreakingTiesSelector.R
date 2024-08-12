@@ -6,6 +6,7 @@ BreakingTiesSelectorFunc = function(ClassProbabilities,
                                     TestSet, 
                                     TrainingSet, 
                                     CandidateSet, 
+                                    ModelType,
                                     SelectorN=1){
   
   ### Last Observations ###
@@ -19,31 +20,40 @@ BreakingTiesSelectorFunc = function(ClassProbabilities,
                 CandidateSet = CandidateSet))
   }else{
   
-  ### Selector ###
-  ProbMax1 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], MARGIN = 1, FUN = max)
-  ProbMax2 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], 
-                   MARGIN = 1, 
-                   FUN = function(x) {sort(x,partial=length(x)-1)[length(x)-1]})
-  TestSet$BreakingTiesProb = ProbMax1 - ProbMax2
-  IDRec = arrange(TestSet, BreakingTiesProb)$ID[1:SelectorN]
-  MostUncertainObs = TestSet[TestSet$ID==IDRec, 
-                                 setdiff(names(TestSet), c("ID", "Y", "BreakingTiesProb"))]
+  ### Most Uncertain Observation ###
+    MostUncertainObs = MostUncertainObservationsFunc(ClassProbabilities = ClassProbabilities, 
+                                                     TestSet = TestSet, 
+                                                     TrainingSet = TrainingSet, 
+                                                     CandidateSet = CandidateSet, 
+                                                     ModelType = ModelType,
+                                                     SelectorN=SelectorN)
+    
+    
+    ### Old ###
+  # ProbMax1 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], 
+  #                  MARGIN = 1, 
+  #                  FUN = max)
+  # ProbMax2 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], 
+  #                  MARGIN = 1, 
+  #                  FUN = function(x) {sort(x,partial=length(x)-1)[length(x)-1]})
+  # TestSet$BreakingTiesProb = ProbMax1 - ProbMax2
+  # IDRec = arrange(TestSet, BreakingTiesProb)$ID[1:SelectorN]
+  # MostUncertainObs = TestSet[TestSet$ID==IDRec, 
+  #                                setdiff(names(TestSet), c("ID", "Y", "BreakingTiesProb"))]
   
   ### Distance Metric - or use norm? ###
-  # (dist(rbind(MostUncertainObs,
-  #            CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "MalDistance"))]),
+  # (dist(rbind(MostUncertainObs[, setdiff(names(MostUncertainObs), c("YStar"))],
+  #            CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "YStar"))]),
   #      method = "euclidean") %>%
   #   as.matrix)[,1] -> DistMatrix
   # sort(DistMatrix,partial=length(DistMatrix)-1)[length(DistMatrix)-1]
-
-  # print(c(nrow(TrainingSet),nrow(CandidateSet)))
-  
-  VarCovMatrix = cov(rbind(MostUncertainObs,
-                           CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "MalDistance"))]))
-    MalDistance = try(stats::mahalanobis(x = as.matrix(CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y" , "MalDistance"))]),
-                                         center = as.matrix(MostUncertainObs),  
-                                         cov = VarCovMatrix),
-                  silent = TRUE)
+    
+  VarCovMatrix = cov(rbind(MostUncertainObs[, setdiff(names(MostUncertainObs), c("YStar"))],
+                           CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "YStar", "MalDistance"))]))
+  MalDistance = try(stats::mahalanobis(x = as.matrix(CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "YStar" , "MalDistance"))]),
+                                       center = as.matrix(MostUncertainObs[, setdiff(names(MostUncertainObs), c("YStar"))],),  
+                                       cov = VarCovMatrix),
+                    silent = TRUE)
     
     if(inherits(MalDistance, 'try-error')){
       return(list(TrainingSet = TrainingSet,
