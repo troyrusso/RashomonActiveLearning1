@@ -64,10 +64,10 @@ source(paste0(dir,"functions/Validation.R"))
 set.seed(3)
 ### Input ###
 N = 1000
-K = 2
-NClass = 2
-# ClassProportion = c(1/4, 3/4)
-ClassProportion = rep(1/NClass, NClass)
+K = 3
+NClass = 4
+ClassProportion = c(1/2, 1/8, 1/8, 2/8)
+# ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
 CorrVal = 0.9
 ```
@@ -115,6 +115,9 @@ VarThreshold = .2
 SelectorN = 1
 InitialN = 10
 ModelType = "Linear"
+
+# ModelType = "Logistic" # Has Warnings
+# ModelType = "MultinomLASSO" # Has errors 
 ```
 
 ## Algorithm

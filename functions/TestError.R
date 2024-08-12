@@ -23,7 +23,7 @@ TestErrorFunction = function(Model, ModelType, TestSet){
          },
          LASSO = {
            TestPredictedProbabilities = predict(Model,
-                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
+                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y", "YStar"))]),
                                                 type = "response")
            TestPredictedLabels = ifelse(TestPredictedProbabilities > 0.5,1,0)+1
            
@@ -33,17 +33,17 @@ TestErrorFunction = function(Model, ModelType, TestSet){
          },
          Multinomial = {
            TestPredictedProbabilities = predict(Model,
-                                                newdata = TestSet[, setdiff(names(TestSet), c("ID"))],
+                                                newdata = TestSet[, setdiff(names(TestSet), c("ID", "YStar"))],
                                                 type = "prob")
            TestPredictedLabels = predict(Model,
-                                         newdata = TestSet[, setdiff(names(TestSet), c("ID"))])
+                                         newdata = TestSet[, setdiff(names(TestSet), c("ID", "YStar"))])
          },
          MultinomLASSO = {
            TestPredictedProbabilities = predict(Model,
-                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
+                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y", "YStar"))]),
                                                 type = "response")[,,]
            TestPredictedLabels = predict(Model,
-                                             newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
+                                             newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y", "YStar"))]),
                                              type = "class") %>% as.factor
          },
          Linear = {
