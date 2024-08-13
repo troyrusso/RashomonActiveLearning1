@@ -31,11 +31,10 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
       SigmaMatrix = VarCov
     }
       
-      VarCov
   ### True Betas ###
-  TrueBetas = matrix(rnorm(n = K * (NClass - 1), mean = 0, sd = 1), 
+  TrueBetas = matrix(rnorm(n = K * (NClass - 1), mean = 0, sd = 1),
                      ncol = K)
-  
+
   ### Predictors ###
   X = MASS::mvrnorm(n = 3*N,
                     mu = MeanMatrix,
@@ -44,7 +43,7 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
   ### Probabilities ###
   Logit = X %*% t(TrueBetas)
   Probs = 1/(1+exp(-Logit))
-  
+
   ### Labels ###
   Y = rbinom(n = 3*N, size = 1, prob = Probs)
 
@@ -59,8 +58,7 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
                                                 replace = FALSE))
   dat = cbind(ID = 1:N,PrelimDat[unlist(IndicesList), ])
   colnames(dat) = c("ID", "Y", paste0("X", 1:K))
-
-
+  
   ### Return ###
   return(list(dat = dat,
               TrueBetas = TrueBetas,

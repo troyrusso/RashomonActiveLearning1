@@ -65,7 +65,7 @@ source(paste0(dir,"functions/Validation.R"))
 ### Input ###
 set.seed(1)
 N = 1000
-K = 5
+K = 4
 NClass = 2
 # ClassProportion = c(1/2, 1/8, 1/8, 2/8)
 ClassProportion = rep(1/NClass, NClass)
@@ -74,9 +74,9 @@ MeanMatrix = rep(0,K)
 
 ```{r}
 ### Covariate Correlation Structure ###
-VarCov = diag(5)
-VarCov[4,2] = 0.9
-VarCov[2,4] = 0.9
+VarCov = diag(K)
+VarCov[4,2] = -0.5
+VarCov[2,4] = -0.5
 ```
 
     
@@ -90,7 +90,7 @@ TrueBetas = DGPResults$TrueBetas
 ```{r}
 ### Visualize ###
 ScatterPlotX1X2 = ggplot(data = dat) +
-  geom_point(mapping = aes(x = X1, y = X2, color = as.factor(Y)))
+  geom_point(mapping = aes(x = X2, y = X4, color = as.factor(Y)))
 ScatterPlotX1X2
 ```
 
@@ -138,8 +138,8 @@ ModelListBreakingTies = SimResultsBreakingTies$ModelList
 ```{r}
 ### Stop Iter ###
 TailN = 10
-VarThreshold = 0.1
-ErrorThreshold = 0.22
+VarThreshold = 0.2
+ErrorThreshold = 0.25
 StopIterRandom = StoppingCriteriaFunc(SimResultsRandom$Error, ErrorThreshold, VarThreshold, TailN)
 StopIterBreakingTies = StoppingCriteriaFunc(SimResultsBreakingTies$Error, ErrorThreshold, VarThreshold, TailN)
 
@@ -196,7 +196,6 @@ for(j in 1:length(ModelListRandom)){
   DifferenceModelListRandom[j] = norm(matrix(CoefModelListRandom[j,] - TrueBetas))
   DifferenceModelListBreakingTies[j] = norm(matrix(CoefModelListBreakingTies[j,] - TrueBetas))
 }
-
 ```
 
 
