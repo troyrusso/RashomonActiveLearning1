@@ -16,16 +16,16 @@ TestErrorFunction = function(Model, ModelType, TestSet){
                                                           type = "response"))
            TestPredictedLabels = 1*(predict(Model, 
                                             newdata = TestSet, 
-                                            type = "response")>0.5)+1
+                                            type = "response")>0.5)
            TestPredictedProbabilities = cbind(ID = as.numeric(rownames(TestPredictedProbabilities)),
                                               Class1 = TestPredictedProbabilities[,1], 
                                               Class2 = 1-TestPredictedProbabilities[,1])
          },
-         LASSOClassification = {
+         LASSO = {
            TestPredictedProbabilities = predict(Model,
-                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y", "YStar"))]),
+                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
                                                 type = "response")
-           TestPredictedLabels = ifelse(TestPredictedProbabilities > 0.5,1,0)+1
+           TestPredictedLabels = ifelse(TestPredictedProbabilities > 0.5,1,0)
            
            TestPredictedProbabilities = cbind(ID = as.numeric(rownames(TestPredictedProbabilities)),
                                               Class1 = TestPredictedProbabilities[,1], 
@@ -33,38 +33,18 @@ TestErrorFunction = function(Model, ModelType, TestSet){
          },
          Multinomial = {
            TestPredictedProbabilities = predict(Model,
-                                                newdata = TestSet[, setdiff(names(TestSet), c("ID", "YStar"))],
+                                                newdata = TestSet[, setdiff(names(TestSet), c("ID"))],
                                                 type = "prob")
            TestPredictedLabels = predict(Model,
-                                         newdata = TestSet[, setdiff(names(TestSet), c("ID", "YStar"))])
+                                         newdata = TestSet[, setdiff(names(TestSet), c("ID"))])
          },
          MultinomLASSO = {
            TestPredictedProbabilities = predict(Model,
-                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y", "YStar"))]),
+                                                newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
                                                 type = "response")[,,]
            TestPredictedLabels = predict(Model,
-                                             newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y", "YStar"))]),
+                                             newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
                                              type = "class") %>% as.factor
-         },
-         Linear = {
-           
-           LMPredict = predict(Model, 
-                               newdata = TestSet,
-                               se.fit =TRUE)
-           TestPredictedLabels = LMPredict$fit
-           TestPredictedProbabilities = LMPredict$se.fit
-           
-           Error = mean((TestPredictedLabels - TestSet$YStar)^2)
-           
-           ClassError = tapply(X = 1:length(TestSet$Y), # Class Error
-                               INDEX = TestSet$Y, 
-                               FUN = function(i) mean((TestPredictedLabels[i] - TestSet$YStar[i])^2)) %>%
-             as.vector
-           
-           return(list(Error = Error,
-                       ClassError = ClassError,
-                       TestPredictedLabels = TestPredictedLabels,
-                       TestPredictedProbabilities = TestPredictedProbabilities))
          }
   )
 

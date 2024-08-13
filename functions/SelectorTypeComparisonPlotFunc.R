@@ -7,13 +7,14 @@
 
 SelectorTypeComparisonPlotFunc = function(SimulationType1, 
                                           SimulationType2,
+                                          StopIter1,
+                                          StopIter2,
                                           xlower = NULL, 
                                           xupper = NULL){
   
   ### Set Up ###
   if(is.null(xlower)){xlower = 0}
   if(is.null(xupper)){xupper = max(length(SimulationType2$Error), length(SimulationType2$Error))}
-  
   
   # Error Lines #
   JointErrors = data.frame(cbind(SimulationType1$Error, SimulationType2$Error))
@@ -28,7 +29,7 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
   #   matrix(nrow = 2, ncol = 2, byrow = TRUE)
   # colnames(JointStopIter) = c("StopIter", "SelectorType")
   # JointStopIter$StopIter = as.numeric(JointStopIter$StopIter)
-  # 
+  
   ### Plot ###
   ErrorScatterPlot = ggplot() +
     
@@ -37,11 +38,11 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
               mapping = aes(x = iter, y = value, linetype = SelectorType)) + 
     
     ## Iteration Stop Line ##
-    geom_vline(xintercept = SimulationType1$StopIter,
+    geom_vline(xintercept = StopIter1,
                color = "red",
                linetype = "dashed") + 
     
-    geom_vline(xintercept = SimulationType2$StopIter,
+    geom_vline(xintercept = StopIter2,
                color = "red",
                linetype = "solid") + 
     

@@ -8,7 +8,7 @@
 ### Output:
 # dat: A data set
 
-GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, CorrVal){
+GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
   
   ### Validations ###
   if(length(ClassProportion) != NClass){
@@ -25,9 +25,13 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, CorrVal)
   }
   
   ### Correlation Matrix ###
-  SigmaMatrix = diag(K)
-  SigmaMatrix[SigmaMatrix==0] = CorrVal
-  
+  if(length(VarCov) == 1){
+    SigmaMatrix = diag(K)
+    SigmaMatrix[SigmaMatrix==0] = VarCov}else if(length(VarCov) != 1){
+      SigmaMatrix = VarCov
+    }
+      
+      VarCov
   ### True Betas ###
   TrueBetas = matrix(rnorm(n = K * (NClass - 1), mean = 0, sd = 1), 
                      ncol = K)

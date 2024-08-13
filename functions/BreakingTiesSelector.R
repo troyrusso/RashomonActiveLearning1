@@ -35,10 +35,10 @@ BreakingTiesSelectorFunc = function(LabelProbabilities,
   #   as.matrix)[,1] -> DistMatrix
   # sort(DistMatrix,partial=length(DistMatrix)-1)[length(DistMatrix)-1]
     
-  VarCovMatrix = cov(rbind(MostUncertainObs[, setdiff(names(MostUncertainObs), c("YStar"))],
-                           CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "YStar", "MalDistance"))]))
-  MalDistance = try(stats::mahalanobis(x = as.matrix(CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "YStar" , "MalDistance"))]),
-                                       center = as.matrix(MostUncertainObs[, setdiff(names(MostUncertainObs), c("YStar"))],),  
+  VarCovMatrix = cov(rbind(MostUncertainObs,
+                           CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "MalDistance"))]))
+  MalDistance = try(stats::mahalanobis(x = as.matrix(CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "MalDistance"))]),
+                                       center = as.matrix(MostUncertainObs),  
                                        cov = VarCovMatrix),
                     silent = TRUE)
     

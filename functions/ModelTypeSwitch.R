@@ -11,13 +11,13 @@
 # Error[iter] = mean(MultinomModelPredicted != TrainingSet$Y)
 
 ModelTypeSwitchFunc = function(TrainingSet, ModelType){
-  formula = paste0()
-  
+
+  ### REMEMBER NO INTERCEPT ###
 
   switch(ModelType,
        Logistic = {
          # Model and Prediction #
-         Model = glm(Y ~ ., 
+         Model = glm(Y ~ . -1, 
                      data = TrainingSet[, setdiff(names(TrainingSet), c("ID"))],
                      family = "binomial")
          TrainingLabelProbabilities = as.matrix(predict(Model, 
@@ -30,20 +30,22 @@ ModelTypeSwitchFunc = function(TrainingSet, ModelType){
                                               newdata = TrainingSet[, setdiff(names(TrainingSet), c("ID"))], 
                                               type = "response")>0.5)+1
        },
-       LASSOClassification = {
+       LASSO = {
          # Best Lambda #
-         LassoRegression = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y", "ID"))]),
-                                  y = as.matrix(TrainingSet$Y),
-                                  alpha = 1,
-                                  family = "binomial")
-         MinLambda = min(LassoRegression$lambda)
+         LASSOCV = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y", "ID"))]),
+                          y = as.matrix(TrainingSet$Y),
+                          alpha = 1,
+                          family = "binomial",
+                          intercept = FALSE)
+         MinLambda = min(LASSOCV$lambda)
          
          # Model and Prediction #
          Model = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
                         y = as.matrix(TrainingSet$Y),
                         alpha = 1,
                         lambda = MinLambda,
-                        family = "binomial")
+                        family = "binomial",
+                        intercept = FALSE)
          
          TrainingLabelProbabilities = predict(Model,
                                       newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
@@ -71,7 +73,8 @@ ModelTypeSwitchFunc = function(TrainingSet, ModelType){
          LassoRegression = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID", "Y"))]),
                                   y = as.matrix(TrainingSet$Y),
                                   alpha = 1,
-                                  family = "multinomial")
+                                  family = "multinomial",
+                                  intercept = FALSE)
          MinLambda = min(LassoRegression$lambda)
          
          # Model and Prediction #
@@ -79,7 +82,8 @@ ModelTypeSwitchFunc = function(TrainingSet, ModelType){
                         y = as.matrix(TrainingSet$Y),
                         alpha = 1,
                         lambda = MinLambda,
-                        family = "multinomial")
+                        family = "multinomial",
+                        intercept = FALSE)
          TrainingLabelProbabilities = predict(Model,
                                               newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
                                               s = MinLambda,
@@ -92,35 +96,7 @@ ModelTypeSwitchFunc = function(TrainingSet, ModelType){
                                            newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
                                            s = MinLambda,
                                            type = "class") %>% as.factor
-       },
-       Linear = {
-         
-         Model = lm(YStar ~.,
-                    data = TrainingSet[, setdiff(names(TrainingSet), c("ID", "Y"))])
-         TrainingLabelProbabilities = NA
-         TrainingPredictedLabels = predict(Model, 
-                                           newdata = TrainingSet[, setdiff(names(TrainingSet), c("ID", "Y"))])
-       },
-       LASSORegression = {
-         # Best Lambda #
-         LassoRegression = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("Y", "ID"))]),
-                                  y = as.matrix(TrainingSet$YStar),
-                                  alpha = 1)
-         MinLambda = min(LassoRegression$lambda)
-         
-         # Model and Prediction #
-         Model = glmnet(x = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
-                        y = as.matrix(TrainingSet$YStar),
-                        alpha = 1,
-                        lambda = MinLambda)
-         
-         TrainingPredictedLabels = predict(Model,
-                                           newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
-                                           s = MinLambda)
-         
-         stop("LASSO does not have predictive uncertainity metrics. Fuck lol.")
        }
-
   )
   
   return(list(Model = Model,

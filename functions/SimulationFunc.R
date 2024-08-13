@@ -1,14 +1,11 @@
 SimulationFunc = function(dat,
                           TestProportion = 0.2,
-                          TailN,
-                          ErrorThreshold,
-                          VarThreshold,
                           SelectorType,
                           SelectorN,
                           ModelType,
                           InitialN,
                           seed){
-  # ### Seed ###
+  ### Seed ###
   set.seed(seed)
   
   ### Validation ###
@@ -36,7 +33,7 @@ SimulationFunc = function(dat,
   ClassError = matrix(nrow = nrow(CandidateSet),
                       ncol = NClass)
   colnames(ClassError) = paste0("Class", 1:NClass)
-  StopIter = NULL
+  # StopIter = NULL
   
   ### Progress Bar ###
   pb = txtProgressBar(min = 0, 
@@ -55,8 +52,6 @@ SimulationFunc = function(dat,
     ModelTypeSwitchResults = ModelTypeSwitchFunc(TrainingSet, ModelType)
     Model = ModelTypeSwitchResults$Model
     ModelList[[iter]] = Model
-    # PredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
-    # LabelProbabilities = ModelTypeSwitchResults$TrainingLabelProbabilities
     
     ### Error and Stopping Criteria ### 
     TestErrorResults = TestErrorFunction(Model, ModelType, TestSet)
@@ -64,10 +59,6 @@ SimulationFunc = function(dat,
     LabelProbabilities = TestErrorResults$TestPredictedProbabilities
     Error[iter] = TestErrorResults$Error
     ClassError[iter,] = TestErrorResults$ClassError
-    if(iter > TailN){if(is.null(StopIter)){StopIter = StoppingCriteriaFunc(ErrorVector = Error[1:iter], 
-                                                                           ErrorThreshold = ErrorThreshold, 
-                                                                           VarThreshold = VarThreshold, 
-                                                                           TailN = TailN)}}
     
     ### Selector ###
     SelectorDataSets = SelectorTypeSwitchFunc(ModelType = ModelType,
@@ -90,7 +81,6 @@ SimulationFunc = function(dat,
   return(list(ModelList = ModelList,
               Error = Error,
               ClassError = ClassError,
-              StopIter = StopIter,
               SelectorType = SelectorType,
               TestSet = TestSet,
               TestSetPrediction = TestSetPrediction,
