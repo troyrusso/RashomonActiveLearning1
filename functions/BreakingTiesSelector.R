@@ -2,7 +2,7 @@
 ### Inputs:
 ### Output:
 
-BreakingTiesSelectorFunc = function(ClassProbabilities, 
+BreakingTiesSelectorFunc = function(LabelProbabilities, 
                                     TestSet, 
                                     TrainingSet, 
                                     CandidateSet, 
@@ -21,25 +21,12 @@ BreakingTiesSelectorFunc = function(ClassProbabilities,
   }else{
   
   ### Most Uncertain Observation ###
-    MostUncertainObs = MostUncertainObservationsFunc(ClassProbabilities = ClassProbabilities, 
+    MostUncertainObs = MostUncertainObservationsFunc(LabelProbabilities = LabelProbabilities, 
                                                      TestSet = TestSet, 
                                                      TrainingSet = TrainingSet, 
                                                      CandidateSet = CandidateSet, 
                                                      ModelType = ModelType,
                                                      SelectorN=SelectorN)
-    
-    
-    ### Old ###
-  # ProbMax1 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], 
-  #                  MARGIN = 1, 
-  #                  FUN = max)
-  # ProbMax2 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], 
-  #                  MARGIN = 1, 
-  #                  FUN = function(x) {sort(x,partial=length(x)-1)[length(x)-1]})
-  # TestSet$BreakingTiesProb = ProbMax1 - ProbMax2
-  # IDRec = arrange(TestSet, BreakingTiesProb)$ID[1:SelectorN]
-  # MostUncertainObs = TestSet[TestSet$ID==IDRec, 
-  #                                setdiff(names(TestSet), c("ID", "Y", "BreakingTiesProb"))]
   
   ### Distance Metric - or use norm? ###
   # (dist(rbind(MostUncertainObs[, setdiff(names(MostUncertainObs), c("YStar"))],

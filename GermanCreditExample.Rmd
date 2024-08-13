@@ -45,9 +45,10 @@ source(paste0(dir,"functions/ClassErrorPlot.R"))
 source(paste0(dir,"functions/GenerateData.R"))
 source(paste0(dir,"functions/GenerateData2.R"))
 source(paste0(dir,"functions/ModelTypeSwitch.R"))
+source(paste0(dir,"functions/MostUncertainObservation.R"))
 source(paste0(dir,"functions/RandomSelector.R"))
 source(paste0(dir,"functions/RandomStart.R"))
-source(paste0(dir,"functions/SelectorSimulationFunc.R"))
+source(paste0(dir,"functions/SimulationFunc.R"))
 source(paste0(dir,"functions/SelectorTypeSwitch.R"))
 source(paste0(dir,"functions/SelectorTypeComparisonPlotFunc.R"))
 source(paste0(dir,"functions/StoppingCriteria.R"))
@@ -59,7 +60,7 @@ source(paste0(dir,"functions/Validation.R"))
 
 ## Data
 ```{r}
-# set.seed(1)
+set.seed(1)
 data(GermanCredit)
 GermanCredit = GermanCredit %>% 
   mutate(ID = 1:nrow(GermanCredit),
@@ -95,27 +96,27 @@ ModelType = "Logistic"
 ```
 
 ```{r warning=FALSE}
-SelectorSimulationFunc(dat = dat,
-                       TestProportion = TestProportion,
-                       TailN = TailN,
-                       ErrorThreshold = ErrorThreshold,
-                       VarThreshold = VarThreshold,
-                       SelectorType = "Random",
-                       SelectorN = SelectorN,
-                       ModelType = ModelType,
-                       InitialN = InitialN,
-                       seed = seed) -> SimResultsRandom
+SimulationFunc(dat = dat,
+               TestProportion = TestProportion,
+               TailN = TailN,
+               ErrorThreshold = ErrorThreshold,
+               VarThreshold = VarThreshold,
+               SelectorType = "Random",
+               SelectorN = SelectorN,
+               ModelType = ModelType,
+               InitialN = InitialN,
+               seed = seed) -> SimResultsRandom
 
-SelectorSimulationFunc(dat = dat,
-                       TestProportion = TestProportion,
-                       TailN = TailN,
-                       ErrorThreshold = ErrorThreshold,
-                       VarThreshold = VarThreshold,
-                       SelectorType = "BreakingTies",
-                       SelectorN = SelectorN,
-                       ModelType = ModelType,
-                       InitialN = InitialN,
-                       seed = seed) -> SimResultsBreakingTies
+SimulationFunc(dat = dat,
+               TestProportion = TestProportion,
+               TailN = TailN,
+               ErrorThreshold = ErrorThreshold,
+               VarThreshold = VarThreshold,
+               SelectorType = "BreakingTies",
+               SelectorN = SelectorN,
+               ModelType = ModelType,
+               InitialN = InitialN,
+               seed = seed) -> SimResultsBreakingTies
 ```
 
 ```{r}

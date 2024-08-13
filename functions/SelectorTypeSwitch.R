@@ -16,7 +16,7 @@ SelectorTypeSwitchFunc = function(ModelType,
                                                  CandidateSet = CandidateSet)},
          BreakingTies = {
            SelectorDataSets = BreakingTiesSelectorFunc(ModelType = ModelType,
-                                                       ClassProbabilities = LabelProbabilities,
+                                                       LabelProbabilities = LabelProbabilities,
                                                        TestSet = TestSet,
                                                        TrainingSet = TrainingSet,
                                                        CandidateSet = CandidateSet,

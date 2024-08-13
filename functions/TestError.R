@@ -21,7 +21,7 @@ TestErrorFunction = function(Model, ModelType, TestSet){
                                               Class1 = TestPredictedProbabilities[,1], 
                                               Class2 = 1-TestPredictedProbabilities[,1])
          },
-         LASSO = {
+         LASSOClassification = {
            TestPredictedProbabilities = predict(Model,
                                                 newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y", "YStar"))]),
                                                 type = "response")

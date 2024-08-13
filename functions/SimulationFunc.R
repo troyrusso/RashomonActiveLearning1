@@ -8,7 +8,7 @@ SimulationFunc = function(dat,
                           ModelType,
                           InitialN,
                           seed){
-  ### Seed ###
+  # ### Seed ###
   set.seed(seed)
   
   ### Validation ###

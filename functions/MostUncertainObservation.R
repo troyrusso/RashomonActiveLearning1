@@ -2,7 +2,7 @@
 ### Inputs:
 ### Output:
 
-MostUncertainObservationsFunc = function(ClassProbabilities, 
+MostUncertainObservationsFunc = function(LabelProbabilities, 
                                          TestSet, 
                                          TrainingSet, 
                                          CandidateSet, 
@@ -10,22 +10,23 @@ MostUncertainObservationsFunc = function(ClassProbabilities,
                                          SelectorN=1){
   
   
-  if((ModelType %in% c("Logistic", "LASSO", "Multinomial", "MultinomLASSO"))){
+  if((ModelType %in% c("Logistic", "LASSOClassification", "Multinomial", "MultinomLASSO"))){
     
   ### Selector ###
-  ProbMax1 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], 
+  ProbMax1 = apply(X = LabelProbabilities[, setdiff(colnames(LabelProbabilities), "ID")], 
                    MARGIN = 1, 
                    FUN = max)
-  ProbMax2 = apply(X = ClassProbabilities[, setdiff(colnames(ClassProbabilities), "ID")], 
+  ProbMax2 = apply(X = LabelProbabilities[, setdiff(colnames(LabelProbabilities), "ID")], 
                    MARGIN = 1, 
                    FUN = function(x) {sort(x,partial=length(x)-1)[length(x)-1]})
   TestSet$BreakingTiesProb = ProbMax1 - ProbMax2
   IDRec = arrange(TestSet, BreakingTiesProb)$ID[1:SelectorN]
   MostUncertainObs = TestSet[TestSet$ID==IDRec, 
                              setdiff(names(TestSet), c("ID", "Y", "BreakingTiesProb"))]
-  }else if(ModelType == "Linear"){
-    TestSet$BreakingTiesProb = ClassProbabilities
+  }else if((ModelType %in% c("Linear", "LASSORegression"))){
+    TestSet$BreakingTiesProb = LabelProbabilities
     IDRec = arrange(TestSet, desc(BreakingTiesProb))$ID[1:SelectorN]
+    # IDRec = arrange(TestSet, BreakingTiesProb)$ID[1:SelectorN]
     MostUncertainObs = TestSet[TestSet$ID==IDRec, 
                                setdiff(names(TestSet), c("ID", "Y", "BreakingTiesProb"))]
     
