@@ -67,8 +67,8 @@ set.seed(1)
 N = 1000
 K = 4
 NClass = 2
-# ClassProportion = c(1/2, 1/8, 1/8, 2/8)
-ClassProportion = rep(1/NClass, NClass)
+ClassProportion = c(1/2, 1/2)
+# ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
 ```
 
@@ -193,23 +193,24 @@ for(i in 1:length(ModelListRandom)){
 
 ```{r}
 for(j in 1:length(ModelListRandom)){
-  DifferenceModelListRandom[j] = norm(matrix(CoefModelListRandom[j,] - TrueBetas))
-  DifferenceModelListBreakingTies[j] = norm(matrix(CoefModelListBreakingTies[j,] - TrueBetas))
+  DifferenceModelListRandom[j] = abs(CoefModelListRandom[j,2] - TrueBetas[2])
+  DifferenceModelListBreakingTies[j] = abs(CoefModelListBreakingTies[j,2] - TrueBetas[2])
 }
 ```
 
 
 ```{r}
-CovariateNormError = data.frame(cbind(DifferenceModelListRandom,DifferenceModelListBreakingTies)) %>% 
+CovariateDiffError = data.frame(cbind(DifferenceModelListRandom,DifferenceModelListBreakingTies)) %>% 
     mutate(iter = 1:length(DifferenceModelListRandom)) %>%
     pivot_longer(-iter)
-colnames(CovariateNormError) = c("iter", "SelectorType", "error")
+colnames(CovariateDiffError) = c("iter", "SelectorType", "error")
 
   ### Plot ###
-CovariateNormPlot = ggplot() + 
-    geom_line(data = CovariateNormError,
-              mapping = aes(x = iter, y = error, color = SelectorType))
-CovariateNormPlot
+CovariateDiffPlot = ggplot() + 
+    geom_line(data = CovariateDiffError,
+              mapping = aes(x = iter, y = error, color = SelectorType)) +
+  ylab("X2 LASSO Bias")
+CovariateDiffPlot
 ```
 ```{r}
 rbind(TrueBetas,
@@ -217,7 +218,7 @@ rbind(TrueBetas,
       CoefModelListBreakingTies[nrow(CoefModelListBreakingTies),]) -> CoefficientResults
 rownames(CoefficientResults) = c("True", "Random", "BreakingTies")
 colnames(CoefficientResults) = paste0("X", 1:K)
-CoefficientResults
+CoefficientResults %>% round(5)
 ```
 
 
