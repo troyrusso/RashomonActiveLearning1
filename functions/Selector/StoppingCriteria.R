@@ -20,20 +20,20 @@
 #   if(Cond1 & Cond2){return(IterStop = length(ErrorVector))}else{return(NULL)}
 # }
 
-StoppingCriteriaFunc = function(ErrorVector, ErrorThreshold, VarThreshold, TailN){
-  
-  RollingVariance = sapply(X = TailN:length(ErrorVector),
-                           FUN = function(i) var(ErrorVector[(i-TailN+1):i]))
-  
-  RollingError = sapply(X = TailN:length(ErrorVector),
-                        FUN = function(i) max(ErrorVector[(i-TailN+1):i]))
+StoppingCriteriaFunc = function(SimulationType, ErrorThreshold, VarThreshold, TailN){
 
-  RollVarIndx = which(RollingVariance <= VarThreshold)
-  RollErrorIndx = which(RollingError <= ErrorThreshold)
-  
-  StopIter = intersect(RollVarIndx,RollErrorIndx)[1]+TailN
-  
-  return(StopIter)
+RollingVariance = sapply(X = TailN:length(SimulationType$Error),
+                         FUN = function(i) var(SimulationType$Error[(i-TailN+1):i]))
+
+RollingError = sapply(X = TailN:length(SimulationType$Error),
+                      FUN = function(i) max(SimulationType$Error[(i-TailN+1):i]))
+
+RollVarIndx = which(RollingVariance <= VarThreshold)
+RollErrorIndx = which(RollingError <= ErrorThreshold)
+
+StopIter = intersect(RollVarIndx,RollErrorIndx)[1]+TailN +SimResultsRandom$InitialTrainingSetN
+
+return(StopIter)
 
 }
 

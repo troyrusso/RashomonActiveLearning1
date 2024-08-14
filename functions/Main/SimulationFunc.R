@@ -21,6 +21,8 @@ SimulationFunc = function(dat,
   RandomStart = RandomStartFunc(InitialN=InitialN, dat=dat)
   TrainingSet = RandomStart$TrainingSet
   CandidateSet = RandomStart$CandidateSet
+  InitialTrainingSetN = nrow(TrainingSet)
+  InitialCandidateSetN = nrow(CandidateSet)
   
   ### Set Up ###
   ModelList = vector('list', nrow(CandidateSet))
@@ -33,8 +35,7 @@ SimulationFunc = function(dat,
   ClassError = matrix(nrow = nrow(CandidateSet),
                       ncol = NClass)
   colnames(ClassError) = paste0("Class", 1:NClass)
-  # StopIter = NULL
-  
+
   ### Progress Bar ###
   pb = txtProgressBar(min = 0, 
                       max = nrow(CandidateSet),
@@ -84,5 +85,7 @@ SimulationFunc = function(dat,
               SelectorType = SelectorType,
               TestSet = TestSet,
               TestSetPrediction = TestSetPrediction,
+              InitialTrainingSetN = InitialTrainingSetN,
+              InitialCandidateSetN = InitialCandidateSetN,
               run_time = run_time))
 }

@@ -37,24 +37,28 @@ rm(list=ls())
 
 ## Functions
 
+
 ```{r}
 dir = "/Users/simondn/Documents/RashomonActiveLearning/"
-source(paste0(dir,"functions/ActiveLearningPlot.R"))
-source(paste0(dir,"functions/BreakingTiesSelector.R"))
-source(paste0(dir,"functions/ClassErrorPlot.R"))
-source(paste0(dir,"functions/GenerateData.R"))
-source(paste0(dir,"functions/GenerateData2.R"))
-source(paste0(dir,"functions/GenerateData3.R"))
-source(paste0(dir,"functions/ModelTypeSwitch.R"))
-source(paste0(dir,"functions/MostUncertainObservation.R"))
-source(paste0(dir,"functions/RandomSelector.R"))
-source(paste0(dir,"functions/RandomStart.R"))
-source(paste0(dir,"functions/SimulationFunc.R"))
-source(paste0(dir,"functions/SelectorTypeSwitch.R"))
-source(paste0(dir,"functions/SelectorTypeComparisonPlotFunc.R"))
-source(paste0(dir,"functions/StoppingCriteria.R"))
-source(paste0(dir,"functions/TestError.R"))
-source(paste0(dir,"functions/Validation.R"))
+
+source(paste0(dir,"functions/Selector/BreakingTiesSelector.R"))
+source(paste0(dir,"functions/Selector/ModelTypeSwitch.R"))
+source(paste0(dir,"functions/Selector/MostUncertainObservation.R"))
+source(paste0(dir,"functions/Selector/RandomSelector.R"))
+source(paste0(dir,"functions/Selector/RandomStart.R"))
+source(paste0(dir,"functions/Selector/SelectorTypeSwitch.R"))
+source(paste0(dir,"functions/Selector/StoppingCriteria.R"))
+source(paste0(dir,"functions/Selector/TestError.R"))
+source(paste0(dir,"functions/Selector/Validation.R"))
+
+source(paste0(dir,"functions/Plots/ActiveLearningPlot.R"))
+source(paste0(dir,"functions/Plots/ClassErrorPlot.R"))
+source(paste0(dir,"functions/Plots/SelectorTypeComparisonPlotFunc.R"))
+
+source(paste0(dir,"functions/Main/GenerateData.R"))
+source(paste0(dir,"functions/Main/GenerateData2.R"))
+source(paste0(dir,"functions/Main/GenerateData3.R"))
+source(paste0(dir,"functions/Main/SimulationFunc.R"))
 ```
 
 # Generate Data
@@ -63,12 +67,13 @@ source(paste0(dir,"functions/Validation.R"))
 
 ```{r}
 ### Input ###
-set.seed(1)
+seed = 1234
+set.seed(seed)
 N = 1000
 K = 4
 NClass = 2
-ClassProportion = c(1/2, 1/2)
-# ClassProportion = rep(1/NClass, NClass)
+# ClassProportion = c(3/5, 2/5)
+ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
 ```
 
@@ -99,7 +104,6 @@ ScatterPlotX1X2
 ## Parameters
 
 ```{r}
-seed = 1
 TestProportion = 0.2
 SelectorN = 1
 InitialN = 10
@@ -139,20 +143,28 @@ ModelListBreakingTies = SimResultsBreakingTies$ModelList
 ### Stop Iter ###
 TailN = 10
 VarThreshold = 0.2
-ErrorThreshold = 0.25
-StopIterRandom = StoppingCriteriaFunc(SimResultsRandom$Error, ErrorThreshold, VarThreshold, TailN)
-StopIterBreakingTies = StoppingCriteriaFunc(SimResultsBreakingTies$Error, ErrorThreshold, VarThreshold, TailN)
+ErrorThreshold = 0.18
+StopIterRandom = StoppingCriteriaFunc(SimResultsRandom, 
+                                      ErrorThreshold = ErrorThreshold,
+                                      VarThreshold = VarThreshold, 
+                                      TailN = TailN)
+StopIterBreakingTies = StoppingCriteriaFunc(SimResultsBreakingTies, 
+                                            ErrorThreshold = ErrorThreshold,
+                                            VarThreshold = VarThreshold, 
+                                            TailN = TailN)
 
 ### Plots ###
 xupper =NULL
 ActiveLearningPlotFunc(Error = SimResultsRandom$Error,
                        StopIter = StopIterRandom,
                        SelectorType = SimResultsRandom$SelectorType,
+                       InitialTrainingSetN = SimResultsRandom$InitialTrainingSetN,
                        xupper = xupper) -> RandomPlot
 
 ActiveLearningPlotFunc(Error = SimResultsBreakingTies$Error,
                        StopIter = StopIterBreakingTies,
                        SelectorType = SimResultsBreakingTies$SelectorType,
+                       InitialTrainingSetN = SimResultsBreakingTies$InitialTrainingSetN,
                        xupper = xupper) -> BreakingTiesPlot
 
 SelectorTypeComparisonPlotFunc(SimulationType1 = SimResultsRandom,
@@ -161,9 +173,9 @@ SelectorTypeComparisonPlotFunc(SimulationType1 = SimResultsRandom,
                                StopIter2 = StopIterBreakingTies,
                                xupper = xupper) -> SelectorTypeComparisonPlot
 
-ClassErrorPlotFunc(SimResultsBreakingTies,
+ClassErrorPlotFunc(SimulationResults = SimResultsBreakingTies,
                    xupper = xupper) -> ClassErrorPlotBreakingTies
-ClassErrorPlotFunc(SimResultsRandom,
+ClassErrorPlotFunc(SimulationResults = SimResultsRandom,
                    xupper = xupper) -> ClassErrorPlotRandom
 ```
 

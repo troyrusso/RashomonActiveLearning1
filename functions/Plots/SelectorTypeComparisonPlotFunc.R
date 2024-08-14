@@ -11,14 +11,27 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
                                           StopIter2,
                                           xlower = NULL, 
                                           xupper = NULL){
+  ### Validation ###
+  if(SimulationType1$InitialTrainingSetN != SimulationType2$InitialTrainingSetN){
+    stop("Starting points are not the same.")
+  }
+
+  if(length(SimulationType1$Error) != length(SimulationType2$Error)){
+    stop("Ending points are not the same.")
+  }  
   
+  if((SimulationType1$Error[length(SimulationType1$Error)] - SimulationType2$Error[length(SimulationType2$Error)])>1e-5){
+    warning("The error rate with all observations labelled are not the same.")
+  }
+
   ### Set Up ###
   if(is.null(xlower)){xlower = 0}
-  if(is.null(xupper)){xupper = max(length(SimulationType2$Error), length(SimulationType2$Error))}
+  if(is.null(xupper)){xupper = length(SimulationType1$Error)+SimulationType1$InitialTrainingSetN}
+
   
   # Error Lines #
   JointErrors = data.frame(cbind(SimulationType1$Error, SimulationType2$Error))
-  JointErrors$iter = 1:nrow(JointErrors)
+  JointErrors$iter = (SimulationType1$InitialTrainingSetN+1):(length(SimulationType1$Error)+SimulationType1$InitialTrainingSetN)
   colnames(JointErrors) = c(SimulationType1$SelectorType, SimulationType2$SelectorType, "iter")
   JointErrors = pivot_longer(JointErrors, c(Random, BreakingTies))
   colnames(JointErrors) = c("iter", "SelectorType", "value")
@@ -47,9 +60,13 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
                linetype = "solid") + 
     
     ## Aesthetics ##
-    xlim(xlower, xupper) + 
-    xlab("Iterations") +
-    ylab("Error") +
+    scale_x_continuous(breaks = c(seq(xlower,xupper, 100), 
+                                  StopIter1,
+                                  StopIter2, 
+                                  SimulationType1$InitialTrainingSetN),
+                       lim = c(xlower, xupper))    +
+    xlab("Number of annotated observations") +
+    ylab("Test Set Error") +
     ggtitle("Simulation by Error") +
     theme(plot.title = element_text(size = 15, hjust = 0.5))
   
