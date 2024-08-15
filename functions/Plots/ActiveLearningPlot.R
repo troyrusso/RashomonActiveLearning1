@@ -22,7 +22,7 @@ ActiveLearningPlotFunc = function(Error,
     
     ### Aesthetic ###
     annotate("text", x = 0, y = Error[StopIter], label = round(Error[StopIter],3)) + 
-    scale_x_continuous(breaks = c(seq(xlower,xupper, 100), StopIter, InitialTrainingSetN),
+    scale_x_continuous(breaks = c(seq(xlower,xupper, 1000), StopIter, InitialTrainingSetN),
                        lim = c(xlower, xupper)) +
     xlab("Number of annotated observations") +
     ylab("Test Set Error") +

@@ -20,9 +20,6 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
   if(length(MeanMatrix) != K){
     print(paste0("The length of Betas has to be ", K ,"."))
   }
-  if(NClass>2){
-    stop("The current DGP function only supports binary classes.")
-  }
   
   ### Correlation Matrix ###
   if(length(VarCov) == 1){
@@ -31,33 +28,37 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
       SigmaMatrix = VarCov
     }
       
+
   ### True Betas ###
   TrueBetas = matrix(rnorm(n = K * (NClass - 1), mean = 0, sd = 1),
                      ncol = K)
 
   ### Predictors ###
-  X = MASS::mvrnorm(n = 3*N,
+  X = MASS::mvrnorm(n = NClass*N,
                     mu = MeanMatrix,
                     Sigma = SigmaMatrix)
   
   ### Probabilities ###
   Logit = X %*% t(TrueBetas)
-  Probs = 1/(1+exp(-Logit))
+  Logit = cbind(0, Logit)#
+  Probs = exp(Logit)/rowSums(exp(Logit))#
 
-  ### Labels ###
-  Y = rbinom(n = 3*N, size = 1, prob = Probs)
-
-  ### Preliminary Data Set ###
+  # ### Labels ###
+  Y = apply(Probs, 1, function(p) sample(1:NClass, size = 1, prob = p))-1
+  
+  # ### Preliminary Data Set ###
   PrelimDat = data.frame(Y = as.factor(Y), X = X)
   
   ### Class Proportion ###
   NClassSamples = round(N * ClassProportion)
+  NClassSamples[1] = NClassSamples[1]+ (N - sum(NClassSamples))
   IndicesList = lapply(X = 0:(NClass-1),
                        FUN = function(c) sample(x = rownames(PrelimDat[PrelimDat$Y == c, ]),
                                                 size = NClassSamples[c+1],
                                                 replace = FALSE))
   dat = cbind(ID = 1:N,PrelimDat[unlist(IndicesList), ])
   colnames(dat) = c("ID", "Y", paste0("X", 1:K))
+  rownames(dat) = dat$ID
   
   ### Return ###
   return(list(dat = dat,
