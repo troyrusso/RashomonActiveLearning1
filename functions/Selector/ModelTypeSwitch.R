@@ -96,7 +96,16 @@ ModelTypeSwitchFunc = function(TrainingSet, ModelType){
                                            newx = as.matrix(TrainingSet[, setdiff(names(TrainingSet), c("ID","Y"))]),
                                            s = MinLambda,
                                            type = "class") %>% as.factor
+       },
+       RandomForest = {
+         Model = randomForest::randomForest(Y ~., data = TrainingSet[, setdiff(names(TrainingSet), c("ID"))])
+         TrainingLabelProbabilities = predict(Model, 
+                                              TrainingSet[, setdiff(names(TrainingSet), c("ID"))], 
+                                              type = "prob")
+         TrainingPredictedLabels = predict(Model, 
+                                           TrainingSet[, setdiff(names(TrainingSet), c("ID"))])
        }
+       
   )
   
   return(list(Model = Model,

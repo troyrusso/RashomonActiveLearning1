@@ -18,7 +18,7 @@ ClassErrorPlotFunc = function(SimulationResults, xlower = NULL, xupper = NULL){
   ErrorClassPlot = ggplot() + 
     geom_line(data = ClassErrorDat,
               mapping = aes(x = iter, y = error, color = Class)) +
-    scale_x_continuous(breaks = c(seq(xlower,xupper, 1000), SimulationResults$InitialTrainingSetN),
+    scale_x_continuous(breaks = c(seq(xlower,xupper, 100), SimulationResults$InitialTrainingSetN),
                        lim = c(xlower, xupper)) +
     xlab("Number of annotated observations") +
     ylab("Test Set Error") + 

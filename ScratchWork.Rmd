@@ -69,11 +69,11 @@ source(paste0(dir,"functions/Main/SimulationFunc.R"))
 ### Input ###
 seed = 1234
 set.seed(seed)
-N = 10000
+N = 1000
 K = 4
-NClass = 4
-# ClassProportion = c(3/5, 2/5)
-ClassProportion = rep(1/NClass, NClass)
+NClass = 2
+ClassProportion = c(3/5, 2/5)
+# ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
 ```
 
@@ -114,7 +114,7 @@ ScatterPlotX1X2
 TestProportion = 0.2
 SelectorN = 1
 InitialN = 10
-ModelType = "Multinomial" #Supported Types: Logistic, LASSO, Multinomial, MultinomLASSO
+ModelType = "RandomForest" #Supported Types: Logistic, LASSO, Multinomial, MultinomLASSO
 ```
 
 ## Algorithm
@@ -212,7 +212,7 @@ for(i in 1:length(ModelListRandom)){
 ```
 
 ```{r}
-CovariateLook = 3
+CovariateLook = 2
 for(j in 1:length(ModelListRandom)){
   DifferenceModelListRandom[j] = abs(CoefModelListRandom[j,CovariateLook] - TrueBetas[CovariateLook])
   DifferenceModelListBreakingTies[j] = abs(CoefModelListBreakingTies[j,CovariateLook] - TrueBetas[CovariateLook])

@@ -12,10 +12,10 @@ TestErrorFunction = function(Model, ModelType, TestSet){
   switch(ModelType,
          Logistic = {
            TestPredictedProbabilities = as.matrix(predict(Model, 
-                                                          newdata = TestSet, 
+                                                          newdata = TestSet[, setdiff(names(TestSet), c("ID"))], 
                                                           type = "response"))
            TestPredictedLabels = 1*(predict(Model, 
-                                            newdata = TestSet, 
+                                            newdata = TestSet[, setdiff(names(TestSet), c("ID"))], 
                                             type = "response")>0.5)
            TestPredictedProbabilities = cbind(ID = as.numeric(rownames(TestPredictedProbabilities)),
                                               Class1 = TestPredictedProbabilities[,1], 
@@ -45,6 +45,14 @@ TestErrorFunction = function(Model, ModelType, TestSet){
            TestPredictedLabels = predict(Model,
                                              newx = as.matrix(TestSet[, setdiff(names(TestSet), c("ID","Y"))]),
                                              type = "class") %>% as.factor
+         },
+         RandomForest = {
+           TestPredictedLabels = predict(Model, TestSet[, setdiff(names(TestSet), c("ID"))])
+      
+           TestPredictedProbabilities = predict(Model, TestSet[, setdiff(names(TestSet), c("ID"))], type = "prob")
+           TestPredictedProbabilities = cbind(ID = as.numeric(rownames(TestPredictedProbabilities)),
+                                              Class1 = TestPredictedProbabilities[,1], 
+                                              Class2 = 1-TestPredictedProbabilities[,1])
          }
   )
 
