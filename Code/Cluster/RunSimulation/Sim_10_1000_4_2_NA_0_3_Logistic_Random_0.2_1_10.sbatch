@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --job-name Sim_10_1000_4_2_NA_0_3_Logistic_Random_0.2_1_10
+#SBATCH --partition medium
+#SBATCH --ntasks 1
+#SBATCH --time 7-00:00:00
+#SBATCH --mem-per-cpu=6000
+#SBATCH -o ClusterMessages/out/myscript_Sim_10_1000_4_2_NA_0_3_Logistic_Random_0.2_1_10_%j.out
+#SBATCH -e ClusterMessages/error/myscript_Sim_10_1000_4_2_NA_0_3_Logistic_Random_0.2_1_10_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=simondn@uw.edu
+
+cd ~/RashomonActiveLearning
+module load R
+Rscript Code/functions/Main/RunSimulation.R \
+    --job_name Sim_10_1000_4_2_NA_0_3_Logistic_Random_0.2_1_10\
+    --seed 10 \
+    --N 1000 \
+    --K 4 \
+    --NClass 2 \
+    --ClassProportion NA \
+    --CovCorrVal '0' \
+    --NBins 3 \
+    --ModelType Logistic \
+    --SelectorType Random \
+    --TestProportion 0.2 \
+    --SelectorN 1 \
+    --InitialN '10' \
+    --output Results/10_1000_4_2_NA_0_3_Logistic_Random_0.2_1_10.rds \

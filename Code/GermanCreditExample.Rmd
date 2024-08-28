@@ -27,6 +27,9 @@ library(dplyr)
 library(class)
 library(glmnet)
 library(caret)
+library(nnet)
+library(RcppAlgos)  #TVA
+library(data.table) #TVA
 ```
 
 ## Rm. Var.
@@ -38,34 +41,23 @@ rm(list=ls())
 ## Functions
 
 ```{r}
-dir = "/Users/simondn/Documents/RashomonActiveLearning/"
-source(paste0(dir,"functions/ActiveLearningPlot.R"))
-source(paste0(dir,"functions/BreakingTiesSelector.R"))
-source(paste0(dir,"functions/ClassErrorPlot.R"))
-source(paste0(dir,"functions/GenerateData.R"))
-source(paste0(dir,"functions/GenerateData2.R"))
-source(paste0(dir,"functions/ModelTypeSwitch.R"))
-source(paste0(dir,"functions/MostUncertainObservation.R"))
-source(paste0(dir,"functions/RandomSelector.R"))
-source(paste0(dir,"functions/RandomStart.R"))
-source(paste0(dir,"functions/SimulationFunc.R"))
-source(paste0(dir,"functions/SelectorTypeSwitch.R"))
-source(paste0(dir,"functions/SelectorTypeComparisonPlotFunc.R"))
-source(paste0(dir,"functions/StoppingCriteria.R"))
-source(paste0(dir,"functions/TestError.R"))
-source(paste0(dir,"functions/Validation.R"))
+rm(list=ls())
+directory = "/Users/simondn/Documents/RashomonActiveLearning/"
+
+if(exists("directory")){
+  source(paste0(directory,"Code/functions/Main/LoadFunctions.R"))
+  }else if(!exists("directory")){source("Code/functions/Main/LoadFunctions.R")}
 ```
 
 # Generate Data
 
 ## Data
 ```{r}
-set.seed(1)
 data(GermanCredit)
-GermanCredit = GermanCredit %>% 
+dat = GermanCredit %>% 
   mutate(ID = 1:nrow(GermanCredit),
-         Class = case_when(Class == "Good" ~ 1,
-                           Class == "Bad" ~ 2)) %>%
+         Class = case_when(Class == "Good" ~ 0,
+                           Class == "Bad" ~ 1)) %>%
   mutate(Class = as.factor(Class)) %>%
   rename(Y = Class) %>%
   select(ID,
@@ -81,26 +73,58 @@ GermanCredit = GermanCredit %>%
          ForeignWorker)
 ```
 
-# One Iteration
 
+## Discretize
 ```{r}
-seed = 1
-dat = GermanCredit
-TailN = 30
-TestProportion = 0.2
-ErrorThreshold = 0.25
-VarThreshold = .1
-SelectorN = 1
-InitialN = 10
-ModelType = "Logistic"
+NBins = 3
+dat = dat %>% mutate(Duration = ntile(Duration, NBins),
+                                       Amount = ntile(Amount, NBins),
+                                       Age = ntile(Age, NBins))
 ```
 
-```{r warning=FALSE}
+```{r}
+for(k in 3:ncol(dat)){
+  # print(k)
+   length(table(dat[,k]) %>% print())
+}
+
+```
+
+
+```{r}
+RashomonProfile = RashomonProfileFunc(dat, K, NBins)
+RashomonSetNum = RashomonProfile$RashomonSetNum
+RashomonLosses = RashomonProfile$RashomonLosses
+PredictionObsModel = RashomonProfile$PredictionObsModel
+PredictionObsModelRounded = RashomonProfile$PredictionObsModelRounded
+RashomonSetTime = RashomonProfile$RashomonSetTime
+WholeSetTime = RashomonProfile$WholeSetTime
+dat = data.frame(dat)
+
+for(col in 1:ncol(PredictionObsModel)){
+   table(PredictionObsModel[,col]) %>% print()
+   table(PredictionObsModelRounded[,col]) %>% print()
+}
+```
+
+
+
+# Inputs
+```{r}
+### Input ###
+seed = 1
+TestProportion = 0.2
+SelectorN = 1
+InitialN = 10
+ModelType = "Logistic" #Supported Types: Logistic, LASSO, Multinomial, MultinomLASSO, RandomForest
+NBins = 3
+```
+
+## Algorithm
+
+```{r}
 SimulationFunc(dat = dat,
                TestProportion = TestProportion,
-               TailN = TailN,
-               ErrorThreshold = ErrorThreshold,
-               VarThreshold = VarThreshold,
                SelectorType = "Random",
                SelectorN = SelectorN,
                ModelType = ModelType,
@@ -109,107 +133,72 @@ SimulationFunc(dat = dat,
 
 SimulationFunc(dat = dat,
                TestProportion = TestProportion,
-               TailN = TailN,
-               ErrorThreshold = ErrorThreshold,
-               VarThreshold = VarThreshold,
                SelectorType = "BreakingTies",
                SelectorN = SelectorN,
                ModelType = ModelType,
                InitialN = InitialN,
                seed = seed) -> SimResultsBreakingTies
+
 ```
+
+
+## Visualize
 
 ```{r}
 TestSetPredictionsRandom = SimResultsRandom$TestSetPrediction
 TestSetPredictionsBreakingTies = SimResultsBreakingTies$TestSetPrediction
+
+ModelListRandom = SimResultsRandom$ModelList
+ModelListBreakingTies = SimResultsBreakingTies$ModelList
 ```
 
 
 ```{r}
+### Stop Iter ###
+TailN = 10
+VarThreshold = 0.2
+ErrorThreshold = 0.3
+StopIterRandom = StoppingCriteriaFunc(SimResultsRandom, 
+                                      ErrorThreshold = ErrorThreshold,
+                                      VarThreshold = VarThreshold, 
+                                      TailN = TailN)
+StopIterBreakingTies = StoppingCriteriaFunc(SimResultsBreakingTies, 
+                                            ErrorThreshold = ErrorThreshold,
+                                            VarThreshold = VarThreshold, 
+                                            TailN = TailN)
+
+### Plots ###
+xupper =NULL
 ActiveLearningPlotFunc(Error = SimResultsRandom$Error,
-                       StopIter = SimResultsRandom$StopIter,
-                       SelectorType = SimResultsRandom$SelectorType) -> RandomPlot
+                       StopIter = StopIterRandom,
+                       SelectorType = SimResultsRandom$SelectorType,
+                       InitialTrainingSetN = SimResultsRandom$InitialTrainingSetN,
+                       xupper = xupper) -> RandomPlot
 
 ActiveLearningPlotFunc(Error = SimResultsBreakingTies$Error,
-                       StopIter = SimResultsBreakingTies$StopIter,
-                       SelectorType = SimResultsBreakingTies$SelectorType) -> BreakingTiesPlot
+                       StopIter = StopIterBreakingTies,
+                       SelectorType = SimResultsBreakingTies$SelectorType,
+                       InitialTrainingSetN = SimResultsBreakingTies$InitialTrainingSetN,
+                       xupper = xupper) -> BreakingTiesPlot
 
-SelectorTypeComparisonPlotFunc(SimResultsRandom,SimResultsBreakingTies) -> SelectorTypeComparisonPlot
+SelectorTypeComparisonPlotFunc(SimulationType1 = SimResultsRandom,
+                               SimulationType2 = SimResultsBreakingTies,
+                               StopIter1 = StopIterRandom,
+                               StopIter2 = StopIterBreakingTies,
+                               xupper = xupper) -> SelectorTypeComparisonPlot
 
-ClassErrorPlotFunc(SimResultsBreakingTies) -> ClassErrorPlotBreakingTies
-ClassErrorPlotFunc(SimResultsRandom) -> ClassErrorPlotRandom
+ClassErrorPlotFunc(SimulationResults = SimResultsBreakingTies,
+                   xupper = xupper) -> ClassErrorPlotBreakingTies
+ClassErrorPlotFunc(SimulationResults = SimResultsRandom,
+                   xupper = xupper) -> ClassErrorPlotRandom
 ```
 
+
 ```{r}
+# ClassErrorPlotBreakingTies
+# ClassErrorPlotRandom
 # RandomPlot
 # BreakingTiesPlot
 SelectorTypeComparisonPlot
-ClassErrorPlotBreakingTies
-ClassErrorPlotRandom
 ```
-
-
-
-
-# Simulation
-```{r}
-# ### Set Up ###
-# dat = GermanCredit
-# TailN = 30
-# TestProportion = 0.2
-# ErrorThreshold = 0.25
-# VarThreshold = .1
-# SelectorN = 1
-# InitialN = 10
-# ModelType = "LASSO"
-# 
-# NSeed = 50
-# SimulationRandomModels = vector('list', NSeed)
-# SimulationBreakingTiesModels = vector('list', NSeed)
-# MyPlots = vector('list', NSeed)
-# 
-# ### Iteration ###
-# for(SeedIter in 1:NSeed){
-#   
-#   print(SeedIter)
-#   
-#   ### Random Simulation ###
-#   SelectorSimulationFunc(dat = dat,
-#                        TestProportion = TestProportion,
-#                        TailN = TailN,
-#                        ErrorThreshold = ErrorThreshold,
-#                        VarThreshold = VarThreshold,
-#                        SelectorType = "Random",
-#                        SelectorN = SelectorN,
-#                        ModelType = ModelType,
-#                        InitialN = InitialN,
-#                        seed = SeedIter) -> SimulationRandomModels[[SeedIter]]
-#   
-#   ### Breaking Ties Simulation ###
-#   SelectorSimulationFunc(dat = dat,
-#                        TestProportion = TestProportion,
-#                        TailN = TailN,
-#                        ErrorThreshold = ErrorThreshold,
-#                        VarThreshold = VarThreshold,
-#                        SelectorType = "BreakingTies",
-#                        SelectorN = SelectorN,
-#                        ModelType = ModelType,
-#                        InitialN = InitialN,
-#                        seed = SeedIter) -> SimulationBreakingTiesModels[[SeedIter]]
-#   
-#   ### Plot ###
-#   MyPlots[[SeedIter]] = SelectorTypeComparisonPlotFunc(SimulationRandomModels[[SeedIter]],
-#                                                        SimulationBreakingTiesModels[[SeedIter]])
-# }
-#
-# for(i in 1:NSeed){
-#   print(MyPlots[[i]])
-# }
-```
-
-
-
-
-
-
 

@@ -18,7 +18,7 @@ if(exists("directory")){
   source(paste0(directory,"Code/functions/Plots/ClassErrorPlot.R"))
   source(paste0(directory,"Code/functions/Plots/SelectorTypeComparisonPlotFunc.R"))
   
-  source(paste0(directory,"Code/functions/Main/GenerateData2.R"))
+  source(paste0(directory,"Code/functions/Main/GenerateData.R"))
   source(paste0(directory,"Code/functions/Main/RashomonFunc.R"))
   source(paste0(directory,"Code/functions/Main/SimulationFunc.R"))
   
@@ -45,7 +45,7 @@ if(exists("directory")){
   source("Code/functions/Plots/ActiveLearningPlot.R")
   source("Code/functions/Plots/ClassErrorPlot.R")
   source("Code/functions/Plots/SelectorTypeComparisonPlotFunc.R")
-  source("Code/functions/Main/GenerateData2.R")
+  source("Code/functions/Main/GenerateData.R")
   source("Code/functions/Main/RashomonFunc.R")
   source("Code/functions/Main/SimulationFunc.R")
   

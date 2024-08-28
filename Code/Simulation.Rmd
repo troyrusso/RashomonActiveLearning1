@@ -78,34 +78,30 @@ TrueBetas = DGPResults$TrueBetas
 # Rashomon Test
 ```{r}
 # Discretize Covariates
-NBins = 3
-dat = dat %>% mutate(across(starts_with("X"), ~ ntile(., NBins)))
-dat$Y = as.numeric(dat$Y)
-
-RashomonProfile = RashomonProfileFunc(dat, K, NBins)
-RashomonSetNum = RashomonProfile$RashomonSetNum
-RashomonLosses = RashomonProfile$RashomonLosses
-PredictionObsModel = RashomonProfile$PredictionObsModel
-PredictionObsModelRounded = RashomonProfile$PredictionObsModelRounded
-RashomonSetTime = RashomonProfile$RashomonSetTime
-WholeSetTime = RashomonProfile$WholeSetTime
-dat = data.frame(dat)
-
-for(col in 1:ncol(PredictionObsModel)){
-   table(PredictionObsModel[,col]) %>% print()
-   table(PredictionObsModelRounded[,col]) %>% print()
-}
+# NBins = 3
+# dat = dat %>% mutate(across(starts_with("X"), ~ ntile(., NBins)))
+# dat$Y = as.numeric(dat$Y)
+# 
+# RashomonProfile = RashomonProfileFunc(dat, K, NBins)
+# RashomonSetNum = RashomonProfile$RashomonSetNum
+# RashomonLosses = RashomonProfile$RashomonLosses
+# PredictionObsModel = RashomonProfile$PredictionObsModel
+# PredictionObsModelRounded = RashomonProfile$PredictionObsModelRounded
+# RashomonSetTime = RashomonProfile$RashomonSetTime
+# WholeSetTime = RashomonProfile$WholeSetTime
+# dat = data.frame(dat)
+# 
+# for(col in 1:ncol(PredictionObsModel)){
+#    table(PredictionObsModel[,col]) %>% print()
+#    table(PredictionObsModelRounded[,col]) %>% print()
+# }
 ```
 
 
 ## Algorithm
+
 ```{r}
-SimulationFunc(N = N,
-               K = K,
-               NClass = NClass,
-               ClassProportion = ClassProportion,
-               CovCorrVal = CovCorrVal,
-               NBins = NBins,
+SimulationFunc(dat = dat,
                TestProportion = TestProportion,
                SelectorType = "Random",
                SelectorN = SelectorN,
@@ -113,12 +109,7 @@ SimulationFunc(N = N,
                InitialN = InitialN,
                seed = seed) -> SimResultsRandom
 
-SimulationFunc(N = N,
-               K = K,
-               NClass = NClass,
-               ClassProportion = ClassProportion,
-               CovCorrVal = CovCorrVal,
-               NBins = NBins,
+SimulationFunc(dat = dat,
                TestProportion = TestProportion,
                SelectorType = "BreakingTies",
                SelectorN = SelectorN,
@@ -126,8 +117,6 @@ SimulationFunc(N = N,
                InitialN = InitialN,
                seed = seed) -> SimResultsBreakingTies
 
-dat = SimResultsBreakingTies$dat
-TrueBetas = SimResultsBreakingTies$TrueBetas
 ```
 
 ## Visualize

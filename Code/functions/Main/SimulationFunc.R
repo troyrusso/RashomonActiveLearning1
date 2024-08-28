@@ -1,4 +1,4 @@
-SimulationFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins,
+SimulationFunc = function(dat,
                           TestProportion = 0.2,
                           SelectorType,
                           SelectorN,
@@ -7,16 +7,6 @@ SimulationFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins,
                           seed){
   ### Seed ###
   set.seed(seed)
-  
-  ### Data ###
-  DGPResults = GenerateDataFunc(N, K, NClass, ClassProportion, CovCorrVal)
-  dat = DGPResults$dat
-  TrueBetas = DGPResults$TrueBetas
-  
-  ### Discretize Data ###
-  # NBins = 3
-  # dat = dat %>% mutate(across(starts_with("X"), ~ ntile(., NBins)))
-  # dat$Y = as.numeric(dat$Y)
   
   ### Validation ###
   ValidationFunc(dat, SelectorType, ModelType)
@@ -98,9 +88,7 @@ SimulationFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins,
   end_time = Sys.time()
   run_time = end_time - start_time
 
-  return(list(dat = DGPResults$dat,
-              TrueBetas = DGPResults$TrueBetas,
-              ModelList = ModelList,
+  return(list(ModelList = ModelList,
               Error = Error,
               ClassError = ClassError,
               SelectorType = SelectorType,

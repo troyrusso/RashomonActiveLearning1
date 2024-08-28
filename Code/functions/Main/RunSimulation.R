@@ -21,17 +21,16 @@ library(data.table) #TVA
 rm(list=ls())
 
 ## My Functions
+# directory = "/Users/simondn/Documents/RashomonActiveLearning/"
+
 if(exists("directory")){
   source(paste0(directory,"Code/functions/Main/LoadFunctions.R"))
 }else if(!exists("directory")){source("Code/functions/Main/LoadFunctions.R")}
 
-
-### Class Proprtion 
-
 ## Parser ###
 option_list = list(
   make_option(c("--seed"), type = "integer", default = 1, help = "seed", metavar = "integer"),
-  make_option(c("--N"), type = "integer", default = 100, help = "Number of observations", metavar = "integer"),
+  make_option(c("--N"), type = "integer", default = 1000, help = "Number of observations", metavar = "integer"),
   make_option(c("--K"), type = "integer", default = 3, help = "Number of covariates", metavar = "integer"),
   make_option(c("--NClass"), type = "integer", default = 2, help = "Number of classes", metavar = "integer"),
   make_option(c("--ClassProportion"), type = "complex", default = NULL, help = "Proportion of classes", metavar = "complex"),
@@ -62,14 +61,13 @@ SelectorN = args$SelectorN
 InitialN = args$InitialN
 Output = args$Output
 
+### Generate Data ###
+DGPResults = GenerateDataFunc(N, K, NClass, ClassProportion, CovCorrVal, NBins = NBins)
+dat = DGPResults$dat
+TrueBetas = DGPResults$TrueBetas
 
-### Simulation 
-SimulationFunc(N = N,
-               K = K,
-               NClass = NClass,
-               ClassProportion = ClassProportion,
-               CovCorrVal = CovCorrVal,
-               NBins = NBins,
+### Simulation ###
+SimulationFunc(dat,
                TestProportion = TestProportion,
                SelectorType = SelectorType,
                SelectorN = SelectorN,

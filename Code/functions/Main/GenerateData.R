@@ -8,15 +8,18 @@
 ### Output:
 # dat: A data set
 
-GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal){
+### Notes:
+#### Should replace be TRUE
+
+GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins = NA){
   
   ### Validations ###
-  if(length(ClassProportion) != NClass){
-    print(paste0("The length of ClassProportion has to be ", NClass ,"."))
-  }
-  if(round(sum(ClassProportion), 1e-10) != 1){
-    print("The sum of ClassProportion has to be 1")
-  }
+  # if(length(ClassProportion) != NClass){
+  #   print(paste0("The length of ClassProportion has to be ", NClass ,"."))
+  # }
+  # if(round(sum(ClassProportion), 1e-10) != 1){
+  #   print("The sum of ClassProportion has to be 1")
+  # }
   # if(length(MeanMatrix) != K){
   #   print(paste0("The length of Betas has to be ", K ,"."))
   # }
@@ -33,8 +36,10 @@ GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal){
   SigmaMatrix = diag(K)
   SigmaMatrix[1,2] = CovCorrVal
   SigmaMatrix[2,1] = CovCorrVal
-      
-
+  
+  ### Class Proportion ###
+  ClassProportion = rep(1/NClass, NClass)
+  
   ### True Betas ###
   TrueBetas = matrix(rnorm(n = K * (NClass - 1), mean = 0, sd = 1),
                      ncol = K)
@@ -44,6 +49,11 @@ GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal){
   X = MASS::mvrnorm(n = NClass*N,
                     mu = MeanMatrix,
                     Sigma = SigmaMatrix)
+  if(!is.na(NBins)){
+    X = apply(X, MARGIN = 2, FUN = function(x) ntile(x, NBins))
+    }
+  
+
   
   ### Probabilities ###
   Logit = X %*% t(TrueBetas)
@@ -62,7 +72,7 @@ GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal){
   IndicesList = lapply(X = 0:(NClass-1),
                        FUN = function(c) sample(x = rownames(PrelimDat[PrelimDat$Y == c, ]),
                                                 size = NClassSamples[c+1],
-                                                replace = FALSE))
+                                                replace = TRUE))                 #### SHOULD THIS BE TRUE
   dat = cbind(ID = 1:N,PrelimDat[unlist(IndicesList), ])
   colnames(dat) = c("ID", "Y", paste0("X", 1:K))
   rownames(dat) = dat$ID

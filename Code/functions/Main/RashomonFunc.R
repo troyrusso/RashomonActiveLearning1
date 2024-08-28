@@ -11,14 +11,17 @@ RashomonProfileFunc = function(DataSet, K, NBins){
   
   ### Rashomon Profiles ###
   ColArms = paste0("X",1:K)
+  # ColArms = c("Duration", "Amount", "InstallmentRatePercentage", "ResidenceDuration", "Age", "NumberExistingCredits",
+  #             "NumberPeopleMaintenance", "Telephone","ForeignWorker")
   NewDat = assign_universal_label(DataSet, arm_cols = ColArms)
   StartTime = Sys.time()
   aggregate_rashomon_profiles(NewDat,                            # TrainingData
                               value = "Y",                       # Response names
                               arm_cols = ColArms,                # Covariate names
-                              M = K,                             # Number of covariates
+                              M = length(ColArms),               # Number of covariates
                               H = Inf,                           # Maximum number of pools/splits
-                              R = NBins+1,                       # Bins of each arm (assume 0 exists)
+                              # R = NBins+1,                       # Bins of each arm (assume 0 exists)
+                              R = c(3,3,4,4,3,4,2,2,2),
                               reg = 1,                           # Penalty on the splits
                               theta = 5,                         # Threshold; determine relative to best model
                               inactive = 0) -> RashomonProfiles  # Losses will always be the last one - (active arms)
