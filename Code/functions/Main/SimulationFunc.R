@@ -1,4 +1,4 @@
-SimulationFunc = function(dat,
+SimulationFunc = function(N, K, NClass, ClassProportion, CovCorrVal,
                           TestProportion = 0.2,
                           SelectorType,
                           SelectorN,
@@ -9,7 +9,14 @@ SimulationFunc = function(dat,
   set.seed(seed)
   
   ### Data ###
+  DGPResults = GenerateDataFunc3(N, K, NClass, ClassProportion, CovCorrVal)
+  dat = DGPResults$dat
+  TrueBetas = DGPResults$TrueBetas
   
+  ### Discretize Data ###
+  # NBins = 3
+  # dat = dat %>% mutate(across(starts_with("X"), ~ ntile(., NBins)))
+  # dat$Y = as.numeric(dat$Y)
   
   ### Validation ###
   ValidationFunc(dat, SelectorType, ModelType)
@@ -52,6 +59,15 @@ SimulationFunc = function(dat,
     ## Progress Bar ##
     setTxtProgressBar(pb, iter)
     
+    ## Rashomon Stuff ##
+    # RashomonProfile = RashomonProfileFunc(dat, K, NBins)
+    # RashomonSetNum = RashomonProfile$RashomonSetNum
+    # RashomonLosses = RashomonProfile$RashomonLosses
+    # PredictionObsModel = RashomonProfile$PredictionObsModel
+    # RashomonSetTime = RashomonProfile$RashomonSetTime
+    # WholeSetTime = RashomonProfile$WholeSetTime
+    # dat = data.frame(dat)
+    
     ## Train Model ##
     ModelTypeSwitchResults = ModelTypeSwitchFunc(TrainingSet, ModelType)
     Model = ModelTypeSwitchResults$Model
@@ -82,7 +98,9 @@ SimulationFunc = function(dat,
   end_time = Sys.time()
   run_time = end_time - start_time
 
-  return(list(ModelList = ModelList,
+  return(list(dat = DGPResults$dat,
+              TrueBetas = DGPResults$TrueBetas,
+              ModelList = ModelList,
               Error = Error,
               ClassError = ClassError,
               SelectorType = SelectorType,
@@ -92,3 +110,4 @@ SimulationFunc = function(dat,
               InitialCandidateSetN = InitialCandidateSetN,
               run_time = run_time))
 }
+

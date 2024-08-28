@@ -30,60 +30,26 @@ library(nnet)
 library(RcppAlgos)
 ```
 
-## Rm. Var.
+
+## Load Functions
+
 
 ```{r}
 rm(list=ls())
+directory = "/Users/simondn/Documents/RashomonActiveLearning/"
+# source(paste0(dir,"Code/functions/Main/LoadFunctions.R"))
+
+if(exists("directory")){
+  source(paste0(directory,"Code/functions/Main/LoadFunctions.R"))
+  }else if(!exists("directory")){source("Code/functions/Main/LoadFunctions.R")}
+
 ```
 
-## Functions
 
-
-```{r}
-dir = "/Users/simondn/Documents/RashomonActiveLearning/"
-
-source(paste0(dir,"Code/functions/Selector/BreakingTiesSelector.R"))
-source(paste0(dir,"Code/functions/Selector/ModelTypeSwitch.R"))
-source(paste0(dir,"Code/functions/Selector/MostUncertainObservation.R"))
-source(paste0(dir,"Code/functions/Selector/RandomSelector.R"))
-source(paste0(dir,"Code/functions/Selector/RandomStart.R"))
-source(paste0(dir,"Code/functions/Selector/SelectorTypeSwitch.R"))
-source(paste0(dir,"Code/functions/Selector/StoppingCriteria.R"))
-source(paste0(dir,"Code/functions/Selector/TestError.R"))
-source(paste0(dir,"Code/functions/Selector/Validation.R"))
-
-source(paste0(dir,"Code/functions/Plots/ActiveLearningPlot.R"))
-source(paste0(dir,"Code/functions/Plots/ClassErrorPlot.R"))
-source(paste0(dir,"Code/functions/Plots/SelectorTypeComparisonPlotFunc.R"))
-
-source(paste0(dir,"Code/functions/Main/GenerateData.R"))
-source(paste0(dir,"Code/functions/Main/GenerateData2.R"))
-source(paste0(dir,"Code/functions/Main/GenerateData3.R"))
-source(paste0(dir,"Code/functions/Main/RashomonFunc.R"))
-source(paste0(dir,"Code/functions/Main/SimulationFunc.R"))
-```
-
-## Rashomon Functions
-```{r}
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/aggregate.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/count.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/find_rashomon_set.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/globals.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/loss.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/predictions.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/RashomonSet.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/rashomontva-package.R")
-source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/utils.R")
-```
-
-# Generate Data
-
-## Data
-
+# Inputs
 ```{r}
 ### Input ###
 seed = 123
-set.seed(seed)
 N = 1000
 K = 4
 NClass = 2
@@ -91,57 +57,48 @@ NClass = 2
 ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
 CovCorrVal = -0.9
-```
-
-    
-```{r}
-### Data ###
-DGPResults = GenerateDataFunc3(N, K, NClass, ClassProportion, MeanMatrix, CovCorrVal)
-dat = DGPResults$dat
-TrueBetas = DGPResults$TrueBetas
-```
-
-## Discretize Covariates
-```{r}
-# NBins = 3
-# dat = dat %>% mutate(across(starts_with("X"), ~ ntile(., NBins)))
-# dat$Y = as.numeric(dat$Y)
-```
-
-### Rashomon Example 
-
-```{r}
-# RashomonProfile = RashomonProfileFunc(dat, K, NBins)
-# RashomonSetNum = RashomonProfile$RashomonSetNum
-# RashomonLosses = RashomonProfile$RashomonLosses
-# PredictionObsModel = RashomonProfile$PredictionObsModel
-# RashomonSetTime = RashomonProfile$RashomonSetTime
-# WholeSetTime = RashomonProfile$WholeSetTime
-# dat = data.frame(dat)
-```
-
-
-```{r}
-### Visualize ###
-# ScatterPlotX1X2 = ggplot(data = dat) +
-  # geom_point(mapping = aes(x = X2, y = X4, color = as.factor(Y)))
-# ScatterPlotX1X2
-```
-
-# Simulation
-
-## Parameters
-
-```{r}
 TestProportion = 0.2
 SelectorN = 1
 InitialN = 10
 ModelType = "LASSO" #Supported Types: Logistic, LASSO, Multinomial, MultinomLASSO, RandomForest
 ```
 
+
+```{r}
+### Seed ###
+set.seed(seed)
+
+### Data ###
+DGPResults = GenerateDataFunc3(N, K, NClass, ClassProportion, CovCorrVal)
+dat = DGPResults$dat
+TrueBetas = DGPResults$TrueBetas
+  
+# Discretize Covariates
+NBins = 3
+dat = dat %>% mutate(across(starts_with("X"), ~ ntile(., NBins)))
+dat$Y = as.numeric(dat$Y)
+
+RashomonProfile = RashomonProfileFunc(dat, K, NBins)
+RashomonSetNum = RashomonProfile$RashomonSetNum
+RashomonLosses = RashomonProfile$RashomonLosses
+PredictionObsModel = RashomonProfile$PredictionObsModel
+RashomonSetTime = RashomonProfile$RashomonSetTime
+WholeSetTime = RashomonProfile$WholeSetTime
+dat = data.frame(dat)
+
+for(col in 1:ncol(PredictionObsModel)){
+   table(PredictionObsModel[,col]) %>% print()
+}
+```
+
+
 ## Algorithm
 ```{r}
-SimulationFunc(dat = dat,
+SimulationFunc(N = N,
+               K = K,
+               NClass = NClass,
+               ClassProportion = ClassProportion,
+               CovCorrVal = CovCorrVal,
                TestProportion = TestProportion,
                SelectorType = "Random",
                SelectorN = SelectorN,
@@ -149,16 +106,24 @@ SimulationFunc(dat = dat,
                InitialN = InitialN,
                seed = seed) -> SimResultsRandom
 
-SimulationFunc(dat = dat,
+SimulationFunc(N = N,
+               K = K,
+               NClass = NClass,
+               ClassProportion = ClassProportion,
+               CovCorrVal = CovCorrVal,
                TestProportion = TestProportion,
                SelectorType = "BreakingTies",
                SelectorN = SelectorN,
                ModelType = ModelType,
                InitialN = InitialN,
                seed = seed) -> SimResultsBreakingTies
+
+dat = SimResultsBreakingTies$dat
+TrueBetas = SimResultsBreakingTies$TrueBetas
 ```
 
 ## Visualize
+
 ```{r}
 TestSetPredictionsRandom = SimResultsRandom$TestSetPrediction
 TestSetPredictionsBreakingTies = SimResultsBreakingTies$TestSetPrediction

@@ -8,7 +8,7 @@
 ### Output:
 # dat: A data set
 
-GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, CovCorrVal){
+GenerateDataFunc3 = function(N, K, NClass, ClassProportion, CovCorrVal){
   
   ### Validations ###
   if(length(ClassProportion) != NClass){
@@ -17,9 +17,9 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, CovCorrV
   if(round(sum(ClassProportion), 1e-10) != 1){
     print("The sum of ClassProportion has to be 1")
   }
-  if(length(MeanMatrix) != K){
-    print(paste0("The length of Betas has to be ", K ,"."))
-  }
+  # if(length(MeanMatrix) != K){
+  #   print(paste0("The length of Betas has to be ", K ,"."))
+  # }
   if(K == 1){
     print("Need at least two covariates.")
   }
@@ -40,6 +40,7 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, CovCorrV
                      ncol = K)
 
   ### Predictors ###
+  MeanMatrix = rep(0,K)
   X = MASS::mvrnorm(n = NClass*N,
                     mu = MeanMatrix,
                     Sigma = SigmaMatrix)
