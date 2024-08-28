@@ -1,4 +1,4 @@
-SimulationFunc = function(N, K, NClass, ClassProportion, CovCorrVal,
+SimulationFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins,
                           TestProportion = 0.2,
                           SelectorType,
                           SelectorN,
@@ -9,7 +9,7 @@ SimulationFunc = function(N, K, NClass, ClassProportion, CovCorrVal,
   set.seed(seed)
   
   ### Data ###
-  DGPResults = GenerateDataFunc3(N, K, NClass, ClassProportion, CovCorrVal)
+  DGPResults = GenerateDataFunc(N, K, NClass, ClassProportion, CovCorrVal)
   dat = DGPResults$dat
   TrueBetas = DGPResults$TrueBetas
   

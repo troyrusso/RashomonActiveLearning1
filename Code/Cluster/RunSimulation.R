@@ -11,8 +11,10 @@ library(dplyr)
 library(class)
 library(glmnet)
 library(nnet)
-library(RcppAlgos)
-library(optparse)
+library(RcppAlgos)  #TVA
+library(optparse)   #parse
+library(data.table) #TVA
+
 
 
 ## Rm. Var.
@@ -33,7 +35,8 @@ option_list = list(
   make_option(c("--K"), type = "integer", default = 3, help = "Number of covariates", metavar = "integer"),
   make_option(c("--NClass"), type = "integer", default = 2, help = "Number of classes", metavar = "integer"),
   make_option(c("--ClassProportion"), type = "complex", default = NULL, help = "Proportion of classes", metavar = "complex"),
-  make_option(c("--CovCorrVal"), type = "numeric", default = -0.4, help = "Mean Matrix", metavar = "numeric"),
+  make_option(c("--CovCorrVal"), type = "numeric", default = -0.4, help = "Correlation between covariate 1 and 2", metavar = "numeric"),
+  make_option(c("--NBins"), type = "numeric", default = 3, help = "Discretizes data into NBins.", metavar = "numeric"),
   make_option(c("--ModelType"), type = "character", default = "Logistic", help = "Predictor model type", metavar = "character"),
   make_option(c("--SelectorType"), type = "character", default = "Random", help = "Selector type", metavar = "character"),
   make_option(c("--TestProportion"), type = "numeric", default = 0.2, help = "Test set proportion", metavar = "numeric"),
@@ -51,6 +54,7 @@ K = args$K
 NClass = args$NClass
 ClassProportion = args$ClassProportion
 CovCorrVal = args$CovCorrVal
+NBins = args$NBins
 ModelType = args$ModelType
 SelectorType = args$SelectorType
 TestProportion = args$TestProportion
@@ -65,6 +69,7 @@ SimulationFunc(N = N,
                NClass = NClass,
                ClassProportion = ClassProportion,
                CovCorrVal = CovCorrVal,
+               NBins = NBins,
                TestProportion = TestProportion,
                SelectorType = SelectorType,
                SelectorN = SelectorN,

@@ -43,12 +43,12 @@ RashomonProfileFunc = function(DataSet, K, NBins){
   }
   WholeSetTime = Sys.time() - StartTime
 
-  # apply(PredictionObsModel, MARGIN = 2, FUN = var)
-  
+
   ### Return ###
   return(list(RashomonSetNum = RashomonSetNum,
               RashomonLosses = RashomonLosses,
-              PredictionObsModel = round(PredictionObsModel),
+              PredictionObsModelRounded = round(PredictionObsModel),
+              PredictionObsModel = PredictionObsModel,
               RashomonSetTime = RashomonSetTime,
               WholeSetTime = WholeSetTime))
 }
