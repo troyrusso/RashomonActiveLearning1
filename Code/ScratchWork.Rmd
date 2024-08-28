@@ -42,25 +42,25 @@ rm(list=ls())
 ```{r}
 dir = "/Users/simondn/Documents/RashomonActiveLearning/"
 
-source(paste0(dir,"functions/Selector/BreakingTiesSelector.R"))
-source(paste0(dir,"functions/Selector/ModelTypeSwitch.R"))
-source(paste0(dir,"functions/Selector/MostUncertainObservation.R"))
-source(paste0(dir,"functions/Selector/RandomSelector.R"))
-source(paste0(dir,"functions/Selector/RandomStart.R"))
-source(paste0(dir,"functions/Selector/SelectorTypeSwitch.R"))
-source(paste0(dir,"functions/Selector/StoppingCriteria.R"))
-source(paste0(dir,"functions/Selector/TestError.R"))
-source(paste0(dir,"functions/Selector/Validation.R"))
+source(paste0(dir,"Code/functions/Selector/BreakingTiesSelector.R"))
+source(paste0(dir,"Code/functions/Selector/ModelTypeSwitch.R"))
+source(paste0(dir,"Code/functions/Selector/MostUncertainObservation.R"))
+source(paste0(dir,"Code/functions/Selector/RandomSelector.R"))
+source(paste0(dir,"Code/functions/Selector/RandomStart.R"))
+source(paste0(dir,"Code/functions/Selector/SelectorTypeSwitch.R"))
+source(paste0(dir,"Code/functions/Selector/StoppingCriteria.R"))
+source(paste0(dir,"Code/functions/Selector/TestError.R"))
+source(paste0(dir,"Code/functions/Selector/Validation.R"))
 
-source(paste0(dir,"functions/Plots/ActiveLearningPlot.R"))
-source(paste0(dir,"functions/Plots/ClassErrorPlot.R"))
-source(paste0(dir,"functions/Plots/SelectorTypeComparisonPlotFunc.R"))
+source(paste0(dir,"Code/functions/Plots/ActiveLearningPlot.R"))
+source(paste0(dir,"Code/functions/Plots/ClassErrorPlot.R"))
+source(paste0(dir,"Code/functions/Plots/SelectorTypeComparisonPlotFunc.R"))
 
-source(paste0(dir,"functions/Main/GenerateData.R"))
-source(paste0(dir,"functions/Main/GenerateData2.R"))
-source(paste0(dir,"functions/Main/GenerateData3.R"))
-source(paste0(dir,"functions/Main/RashomonFunc.R"))
-source(paste0(dir,"functions/Main/SimulationFunc.R"))
+source(paste0(dir,"Code/functions/Main/GenerateData.R"))
+source(paste0(dir,"Code/functions/Main/GenerateData2.R"))
+source(paste0(dir,"Code/functions/Main/GenerateData3.R"))
+source(paste0(dir,"Code/functions/Main/RashomonFunc.R"))
+source(paste0(dir,"Code/functions/Main/SimulationFunc.R"))
 ```
 
 ## Rashomon Functions
@@ -87,22 +87,16 @@ set.seed(seed)
 N = 1000
 K = 4
 NClass = 2
-ClassProportion = c(3/5, 2/5)
-# ClassProportion = rep(1/NClass, NClass)
+# ClassProportion = c(3/5, 2/5)
+ClassProportion = rep(1/NClass, NClass)
 MeanMatrix = rep(0,K)
-```
-
-```{r}
-### Covariate Correlation Structure ###
-VarCov = diag(K)
-VarCov[4,2] = -0.9
-VarCov[2,4] = -0.9
+CovCorrVal = -0.9
 ```
 
     
 ```{r}
 ### Data ###
-DGPResults = GenerateDataFunc3(N, K, NClass, ClassProportion, MeanMatrix, VarCov)
+DGPResults = GenerateDataFunc3(N, K, NClass, ClassProportion, MeanMatrix, CovCorrVal)
 dat = DGPResults$dat
 TrueBetas = DGPResults$TrueBetas
 ```
@@ -178,7 +172,7 @@ ModelListBreakingTies = SimResultsBreakingTies$ModelList
 ### Stop Iter ###
 TailN = 10
 VarThreshold = 0.2
-ErrorThreshold = 0.275
+ErrorThreshold = 0.25
 StopIterRandom = StoppingCriteriaFunc(SimResultsRandom, 
                                       ErrorThreshold = ErrorThreshold,
                                       VarThreshold = VarThreshold, 
@@ -251,13 +245,13 @@ for(j in 1:length(ModelListRandom)){
 
 
 ```{r}
-CovariateDiffError = data.frame(cbind(DifferenceModelListRandom,DifferenceModelListBreakingTies)) %>% 
+CovariateDiffError = data.frame(cbind(DifferenceModelListRandom,DifferenceModelListBreakingTies)) %>%
     mutate(iter = 1:length(DifferenceModelListRandom)) %>%
     pivot_longer(-iter)
 colnames(CovariateDiffError) = c("iter", "SelectorType", "error")
 
   ### Plot ###
-CovariateDiffPlot = ggplot() + 
+CovariateDiffPlot = ggplot() +
     geom_line(data = CovariateDiffError,
               mapping = aes(x = iter, y = error, color = SelectorType)) +
   ylab(paste0("X",CovariateLook, " LASSO Bias")) +

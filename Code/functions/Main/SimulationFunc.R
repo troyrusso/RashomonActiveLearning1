@@ -8,6 +8,9 @@ SimulationFunc = function(dat,
   ### Seed ###
   set.seed(seed)
   
+  ### Data ###
+  
+  
   ### Validation ###
   ValidationFunc(dat, SelectorType, ModelType)
   

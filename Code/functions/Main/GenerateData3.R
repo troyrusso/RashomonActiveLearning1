@@ -8,7 +8,7 @@
 ### Output:
 # dat: A data set
 
-GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
+GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, CovCorrVal){
   
   ### Validations ###
   if(length(ClassProportion) != NClass){
@@ -20,13 +20,19 @@ GenerateDataFunc3 = function(N, K, NClass, ClassProportion, MeanMatrix, VarCov){
   if(length(MeanMatrix) != K){
     print(paste0("The length of Betas has to be ", K ,"."))
   }
+  if(K == 1){
+    print("Need at least two covariates.")
+  }
   
   ### Correlation Matrix ###
-  if(length(VarCov) == 1){
-    SigmaMatrix = diag(K)
-    SigmaMatrix[SigmaMatrix==0] = VarCov}else if(length(VarCov) != 1){
-      SigmaMatrix = VarCov
-    }
+  # if(length(VarCov) == 1){
+  #   SigmaMatrix = diag(K)
+  #   SigmaMatrix[SigmaMatrix==0] = VarCov}else if(length(VarCov) != 1){
+  #     SigmaMatrix = VarCov
+  #   }
+  SigmaMatrix = diag(K)
+  SigmaMatrix[1,2] = CovCorrVal
+  SigmaMatrix[2,1] = CovCorrVal
       
 
   ### True Betas ###
