@@ -27,6 +27,7 @@ library(dplyr)
 library(class)
 library(glmnet)
 library(nnet)
+library(RcppAlgos)
 ```
 
 ## Rm. Var.
@@ -58,7 +59,21 @@ source(paste0(dir,"functions/Plots/SelectorTypeComparisonPlotFunc.R"))
 source(paste0(dir,"functions/Main/GenerateData.R"))
 source(paste0(dir,"functions/Main/GenerateData2.R"))
 source(paste0(dir,"functions/Main/GenerateData3.R"))
+source(paste0(dir,"functions/Main/RashomonFunc.R"))
 source(paste0(dir,"functions/Main/SimulationFunc.R"))
+```
+
+## Rashomon Functions
+```{r}
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/aggregate.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/count.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/find_rashomon_set.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/globals.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/loss.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/predictions.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/RashomonSet.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/rashomontva-package.R")
+source("/Users/simondn/Documents/RashomonActiveLearning/rashomon-tva-R-main/R/utils.R")
 ```
 
 # Generate Data
@@ -67,7 +82,7 @@ source(paste0(dir,"functions/Main/SimulationFunc.R"))
 
 ```{r}
 ### Input ###
-seed = 1234
+seed = 123
 set.seed(seed)
 N = 1000
 K = 4
@@ -80,8 +95,8 @@ MeanMatrix = rep(0,K)
 ```{r}
 ### Covariate Correlation Structure ###
 VarCov = diag(K)
-VarCov[4,2] = -0.5
-VarCov[2,4] = -0.5
+VarCov[4,2] = -0.9
+VarCov[2,4] = -0.9
 ```
 
     
@@ -92,18 +107,31 @@ dat = DGPResults$dat
 TrueBetas = DGPResults$TrueBetas
 ```
 
+## Discretize Covariates
+```{r}
+# NBins = 3
+# dat = dat %>% mutate(across(starts_with("X"), ~ ntile(., NBins)))
+# dat$Y = as.numeric(dat$Y)
+```
+
+### Rashomon Example 
 
 ```{r}
-FullModel = nnet::multinom(Y ~., data = dat[,setdiff(colnames(dat), c("ID"))])
-mean(predict(FullModel, newdata = dat) != dat$Y)
+# RashomonProfile = RashomonProfileFunc(dat, K, NBins)
+# RashomonSetNum = RashomonProfile$RashomonSetNum
+# RashomonLosses = RashomonProfile$RashomonLosses
+# PredictionObsModel = RashomonProfile$PredictionObsModel
+# RashomonSetTime = RashomonProfile$RashomonSetTime
+# WholeSetTime = RashomonProfile$WholeSetTime
+# dat = data.frame(dat)
 ```
 
 
 ```{r}
 ### Visualize ###
-ScatterPlotX1X2 = ggplot(data = dat) +
-  geom_point(mapping = aes(x = X2, y = X4, color = as.factor(Y)))
-ScatterPlotX1X2
+# ScatterPlotX1X2 = ggplot(data = dat) +
+  # geom_point(mapping = aes(x = X2, y = X4, color = as.factor(Y)))
+# ScatterPlotX1X2
 ```
 
 # Simulation
@@ -150,7 +178,7 @@ ModelListBreakingTies = SimResultsBreakingTies$ModelList
 ### Stop Iter ###
 TailN = 10
 VarThreshold = 0.2
-ErrorThreshold = 0.16
+ErrorThreshold = 0.275
 StopIterRandom = StoppingCriteriaFunc(SimResultsRandom, 
                                       ErrorThreshold = ErrorThreshold,
                                       VarThreshold = VarThreshold, 
@@ -194,8 +222,9 @@ RandomPlot
 BreakingTiesPlot
 SelectorTypeComparisonPlot
 ```
-# Beta Comparison
 
+
+# Beta Comparison
 ```{r}
 CoefModelListRandom = numeric(length = length(ModelListRandom) * length(TrueBetas)) %>%
   matrix(nrow = length(ModelListRandom),
@@ -207,6 +236,8 @@ DifferenceModelListBreakingTies = numeric(length = nrow(CoefModelListRandom))
 for(i in 1:length(ModelListRandom)){
   CoefModelListRandom[i,] = as.numeric(coef(ModelListRandom[[i]])[-1])
   CoefModelListBreakingTies[i,] = as.numeric(coef(ModelListBreakingTies[[i]])[-1])
+  # CoefModelListRandom[i,] = as.numeric(coef(ModelListRandom[[i]]))
+  # CoefModelListBreakingTies[i,] = as.numeric(coef(ModelListBreakingTies[[i]]))
 }
 ```
 
@@ -240,6 +271,37 @@ rbind(TrueBetas,
 rownames(CoefficientResults) = c("True", "Random", "BreakingTies")
 colnames(CoefficientResults) = paste0("X", 1:K)
 CoefficientResults %>% round(5)
+```
+
+# Standard Error of Betas
+```{r}
+# ModelEndBT = ModelListBreakingTies[771][[1]]
+```
+
+```{r}
+# SEList = numeric(4*length(ModelListBreakingTies)) %>% 
+#   matrix(ncol = 4)
+# 
+# for(i in 1:length(ModelListBreakingTies)){
+#   SEList[i,] = summary(ModelListBreakingTies[[i]])$coefficients[,2]
+# }
+```
+
+```{r}
+# CovariateSE = SEList %>% 
+#   data.frame %>%
+#   mutate(iter = SimResultsBreakingTies$InitialTrainingSetN:(nrow(SEList)+SimResultsBreakingTies$InitialTrainingSetN-1)) %>%
+#     pivot_longer(-iter)
+# colnames(CovariateSE) = c("iter", "Covariate", "SE")
+# 
+#   ### Plot ###
+# CovariateDiffPlot = ggplot() + 
+#     geom_line(data = CovariateSE,
+#               mapping = aes(x = iter, y = SE, color = Covariate)) + 
+#   ylab("Number of annotated observations")
+#   # xlim(700,800) +
+#   # ylim(0, 0.2)
+# CovariateDiffPlot
 ```
 
 
