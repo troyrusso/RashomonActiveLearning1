@@ -49,7 +49,7 @@ if(exists("directory")){
 ### Input ###
 # seed = 1234567890
 seed = 123
-N = 1000
+N = 100
 K = 4
 NClass = 2
 # ClassProportion = c(3/5, 2/5)
@@ -94,8 +94,8 @@ ModelType = "RashomonLinear"
 ```
 
 ```{r}
-# SelectorType = "BreakingTies"
-# iter=1
+SelectorType = "BreakingTies"
+iter=1
 ```
 
 ```{r}

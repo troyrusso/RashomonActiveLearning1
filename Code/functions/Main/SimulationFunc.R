@@ -53,6 +53,9 @@ SimulationFunc = function(dat,
   
   ### Simulation ###
   for(iter in 1:MaxIterationN){
+    
+    print(iter)
+    
     ## Progress Bar ##
     setTxtProgressBar(pb, iter)
     
@@ -64,13 +67,12 @@ SimulationFunc = function(dat,
                                                  RashomonParameters = RashomonParameters)
     Model = ModelTypeSwitchResults$Model
     ModelList[[iter]] = Model
-    if(ModelType=="RashomonLinear"){RashomonModelLosses = ModelTypeSwitchResults$RashomonModelLosses
+    if(ModelType=="RashomonLinear"){
+      RashomonModelLosses = ModelTypeSwitchResults$RashomonModelLosses
     
     ### Error and Stopping Criteria ### 
     
     ### START FOR NOW - LOOK THIS SHIT OVER HAHAHAH ;-; .-. D: ###
-    }else if(ModelType == "RashomonLinear"){
-      print(SelectorType)# DELETE LATER
       TestSet = TrainingSet                                                                # DELETE LATER
       TestPredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
       PredictionDifference = (TestPredictedLabels - data.frame(TestSet)[,LabelName])^2
@@ -82,9 +84,6 @@ SimulationFunc = function(dat,
                           INDEX = TestSet$Y, 
                           FUN = function(i) mean((TestPredictedLabels[i] - TestSet$YStar[i])^2)) %>%
         as.vector
-      
-      
-      
       
     }else if(ModelType != "RashomonLinear"){                                               # DELETE LATER
       TestErrorResults = TestErrorFunction(Model, ModelType, TestSet, CovariateList, LabelName)
