@@ -64,14 +64,44 @@ SimulationFunc = function(dat,
                                                  RashomonParameters = RashomonParameters)
     Model = ModelTypeSwitchResults$Model
     ModelList[[iter]] = Model
+    if(ModelType=="RashomonLinear"){RashomonModelLosses = ModelTypeSwitchResults$RashomonModelLosses
     
     ### Error and Stopping Criteria ### 
-    TestErrorResults = TestErrorFunction(Model, ModelType, TestSet, CovariateList, LabelName)
-    TestSetPrediction[iter ,] = TestErrorResults$TestPredictedLabels
-    LabelProbabilities = TestErrorResults$TestPredictedProbabilities
-    Error[iter] = TestErrorResults$Error
-    ClassError[iter,] = TestErrorResults$ClassError
     
+    ### START FOR NOW - LOOK THIS SHIT OVER HAHAHAH ;-; .-. D: ###
+    }else if(ModelType == "RashomonLinear"){
+      print(SelectorType)# DELETE LATER
+      TestSet = TrainingSet                                                                # DELETE LATER
+      TestPredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
+      PredictionDifference = (TestPredictedLabels - data.frame(TestSet)[,LabelName])^2
+      DifferenceTimesLosses= PredictionDifference %*% diag(RashomonModelLosses)
+      LabelProbabilities = rowSums(DifferenceTimesLosses)
+    
+      Error[iter] = mean(TestPredictedLabels - TestSet$YStar)^2             # How is "error" measured? This is over the entire Rashomon set.
+      ClassError = tapply(X = 1:length(TestSet$Y),                          # Likewise with class error - over the whole Rashomon set.
+                          INDEX = TestSet$Y, 
+                          FUN = function(i) mean((TestPredictedLabels[i] - TestSet$YStar[i])^2)) %>%
+        as.vector
+      
+      
+      
+      
+    }else if(ModelType != "RashomonLinear"){                                               # DELETE LATER
+      TestErrorResults = TestErrorFunction(Model, ModelType, TestSet, CovariateList, LabelName)
+      TestSetPrediction[iter ,] = TestErrorResults$TestPredictedLabels
+      LabelProbabilities = TestErrorResults$TestPredictedProbabilities
+      Error[iter] = TestErrorResults$Error
+      ClassError[iter,] = TestErrorResults$ClassError
+      }
+    ### END FOR NOW ###    TestSetPrediction[iter ,] = TestErrorResults$TestPredictedLabels
+    
+    # TestErrorResults = TestErrorFunction(Model, ModelType, TestSet, CovariateList, LabelName)
+    # TestSetPrediction[iter ,] = TestErrorResults$TestPredictedLabels
+    # LabelProbabilities = TestErrorResults$TestPredictedProbabilities
+    # Error[iter] = TestErrorResults$Error
+    # ClassError[iter,] = TestErrorResults$ClassError
+    
+
     ### Selector ###
     SelectorDataSets = SelectorTypeSwitchFunc(ModelType = ModelType,
                                               SelectorType = SelectorType, 

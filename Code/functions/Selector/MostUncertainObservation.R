@@ -4,7 +4,6 @@
 
 MostUncertainObservationsFunc = function(LabelProbabilities, 
                                          TestSet, 
-                                         TrainingSet, 
                                          CandidateSet, 
                                          ModelType,
                                          CovariateList){
@@ -12,7 +11,7 @@ MostUncertainObservationsFunc = function(LabelProbabilities,
   if(ModelType %in% c("Linear","RashomonLinear")){
     TestSet = cbind(TestSet, LabelProbabilities)
     IDRec = arrange(TestSet, desc(LabelProbabilities))$ID[1]
-    MostUncertainObs = TestSet[TestSet$ID %in% IDRec, CovariateList]
+    MostUncertainObs = data.frame(TestSet)[TestSet$ID %in% IDRec, CovariateList]
   }else if(!(ModelType %in% c("Linear","RashomonLinear"))){
     ProbMax1 = apply(X = LabelProbabilities[, setdiff(colnames(LabelProbabilities), "ID")], 
                      MARGIN = 1, 

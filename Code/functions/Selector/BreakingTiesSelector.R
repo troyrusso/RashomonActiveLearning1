@@ -26,7 +26,6 @@ BreakingTiesSelectorFunc = function(LabelProbabilities,
   ### Most Uncertain Observation ###
     MostUncertainObs = MostUncertainObservationsFunc(LabelProbabilities = LabelProbabilities, 
                                                      TestSet = TestSet, 
-                                                     TrainingSet = TrainingSet, 
                                                      CandidateSet = CandidateSet,
                                                      CovariateList,
                                                      ModelType = ModelType)
@@ -64,7 +63,7 @@ BreakingTiesSelectorFunc = function(LabelProbabilities,
   SelectedObservation = CandidateSet[MatchedCandidateRowNum,]
   
   ### Set Mutation ###
-  TrainingSet = rbind(TrainingSet[, setdiff(names(TrainingSet), c("BreakingTiesProb"))], 
+  TrainingSet = rbind(data.frame(TrainingSet)[, setdiff(names(TrainingSet), c("BreakingTiesProb"))], 
                       SelectedObservation[, setdiff(names(SelectedObservation), c("DistanceMetric"))])
   
   CandidateSet = CandidateSet[!(CandidateSet$ID %in% SelectedObservation$ID), setdiff(names(CandidateSet), c("DistanceMetric"))]

@@ -116,12 +116,17 @@ ModelTypeSwitchFunc = function(TrainingSet,
          TrainingPredictedLabels = RashomonProfile$TrainingPredictedLabels
          TrainingLabelProbabilities = NULL
          Model = RashomonProfile$RashomonMakeObjects
+         RashomonModelLosses = RashomonProfile$RashomonLosses
          
-         PredictionDifference = abs(TrainingPredictedLabels - data.frame(TrainingSet)[,LabelName])
+         # PredictionDifference = abs(TrainingPredictedLabels - data.frame(TrainingSet)[,LabelName])
        }
   )
   
-  return(list(Model = Model,
-              TrainingPredictedLabels = TrainingPredictedLabels,
-              TrainingLabelProbabilities = TrainingLabelProbabilities))
+  
+  ReturnList = list(Model = Model,
+                    TrainingPredictedLabels = TrainingPredictedLabels,
+                    TrainingLabelProbabilities = TrainingLabelProbabilities)
+  if(ModelType == "RashomonLinear"){ReturnList = c(ReturnList, RashomonModelLosses = list(RashomonModelLosses))}
+  
+  return(ReturnList)
   }

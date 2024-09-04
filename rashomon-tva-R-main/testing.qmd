@@ -1,5 +1,5 @@
 ```{r}
-# library(rashomontva)
+library(rashomontva)
 library(collections)
 library(tidyverse)
 library(data.table)
@@ -321,8 +321,8 @@ profile <- c(1,1,1,1)
 #Readying data, computing means and policies
 data <- assign_universal_label(data, arm_cols)
 data <- assign_policy_label(data, arm_cols)
-policies <- create_policies_from_data(data, arm_cols)
-# policy_means <- policy_means(data, value)
+policies <- rashomontva::create_policies_from_data(data, arm_cols)
+policy_means <- rashomontva::policy_means(data, value)
 
 rset <- aggregate_rashomon_profiles(data, 
                                     arm_cols = arm_cols,

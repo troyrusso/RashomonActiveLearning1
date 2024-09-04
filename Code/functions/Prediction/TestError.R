@@ -70,7 +70,7 @@ TestErrorFunction = function(Model, ModelType, TestSet, CovariateList, LabelName
            TestPredictedProbabilities = NULL
          }
   )
-
+  
   ### Error ###
   if(ModelType %in% c("Linear","RashomonLinear")){
     Error = mean((TestPredictedLabels - TestSet$YStar)^2)
