@@ -53,8 +53,8 @@ SimulationFunc = function(dat,
   
   ### Simulation ###
   for(iter in 1:MaxIterationN){
-    
-    print(iter)
+
+    # print(iter)
     
     ## Progress Bar ##
     setTxtProgressBar(pb, iter)
@@ -65,14 +65,16 @@ SimulationFunc = function(dat,
                                                  CovariateList, 
                                                  ModelType,
                                                  RashomonParameters = RashomonParameters)
+    TrainingSet = data.frame(TrainingSet)[, c("ID", "Y", "YStar", paste0("X",1:length(CovariateList)))]
+    
     Model = ModelTypeSwitchResults$Model
     ModelList[[iter]] = Model
     if(ModelType=="RashomonLinear"){
-      RashomonModelLosses = ModelTypeSwitchResults$RashomonModelLosses
-    
+
     ### Error and Stopping Criteria ### 
     
     ### START FOR NOW - LOOK THIS SHIT OVER HAHAHAH ;-; .-. D: ###
+      RashomonModelLosses = ModelTypeSwitchResults$RashomonModelLosses
       TestSet = TrainingSet                                                                # DELETE LATER
       TestPredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
       PredictionDifference = (TestPredictedLabels - data.frame(TestSet)[,LabelName])^2
@@ -80,7 +82,7 @@ SimulationFunc = function(dat,
       LabelProbabilities = rowSums(DifferenceTimesLosses)
     
       Error[iter] = mean(TestPredictedLabels - TestSet$YStar)^2             # How is "error" measured? This is over the entire Rashomon set.
-      ClassError = tapply(X = 1:length(TestSet$Y),                          # Likewise with class error - over the whole Rashomon set.
+      ClassError[iter,] = tapply(X = 1:length(TestSet$Y),                          # Likewise with class error - over the whole Rashomon set.
                           INDEX = TestSet$Y, 
                           FUN = function(i) mean((TestPredictedLabels[i] - TestSet$YStar[i])^2)) %>%
         as.vector
