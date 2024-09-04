@@ -70,7 +70,9 @@ dat = GermanCredit %>%
          NumberExistingCredits,
          NumberPeopleMaintenance,
          Telephone,
-         ForeignWorker)
+         ForeignWorker) %>%
+  mutate(Telephone = Telephone + 1,
+         ForeignWorker = ForeignWorker+1)
 ```
 
 
@@ -83,11 +85,26 @@ dat = dat %>% mutate(Duration = ntile(Duration, NBins),
 ```
 
 ```{r}
-for(k in 3:ncol(dat)){
-  # print(k)
-   length(table(dat[,k]) %>% print())
-}
-
+### Rashomon Profiles ###
+ColArms = c("Duration",
+            "Amount", 
+            "InstallmentRatePercentage", 
+            "ResidenceDuration", 
+            "Age", 
+            "NumberExistingCredits",
+            "NumberPeopleMaintenance", 
+            "Telephone",
+            "ForeignWorker")
+NewDat = assign_universal_label(dat, arm_cols = ColArms)
+aggregate_rashomon_profiles(NewDat,                               # Data
+                            value = "Y",                       # Response names
+                            arm_cols = ColArms,                # Covariate names
+                            M = length(ColArms),               # Number of covariates
+                            H = Inf,                           # Maximum number of pools/splits
+                            R = (1+c(3,3,4,4,3,4,2,2,2)),
+                            reg = 1,                           # Penalty on the splits
+                            theta = 30,                         # Threshold; determine relative to best model
+                            inactive = 0) -> RashomonProfiles  # Losses will always be the last one - (active arms)
 ```
 
 

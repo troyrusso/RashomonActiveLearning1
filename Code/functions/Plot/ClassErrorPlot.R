@@ -7,12 +7,13 @@
 ClassErrorPlotFunc = function(SimulationResults, xlower = NULL, xupper = NULL){
   
   ### Set Up ###
-  if(is.null(xlower)){xlower = 0}
-  if(is.null(xupper)){xupper = length(SimulationResults$Error) + SimulationResults$InitialTrainingSetN}
   ClassErrorDat = data.frame(SimulationResults$ClassError) %>% 
-    mutate(iter = (SimulationResults$InitialTrainingSetN+1):(nrow(SimulationResults$ClassError)+SimulationResults$InitialTrainingSetN)) %>%
+    mutate(iter = seq(SimulationResults$InitialTrainingSetN+SelectorN, SelectorN*length(SimulationResults$Error)+SimulationResults$InitialTrainingSetN, by =SelectorN)) %>%
     pivot_longer(-iter)
   colnames(ClassErrorDat) = c("iter", "Class", "error")
+
+  if(is.null(xlower)){xlower = 0}
+  if(is.null(xupper)){xupper = tail(ClassErrorDat,1)$iter +SelectorN}
 
   ### Plot ###
   ErrorClassPlot = ggplot() + 

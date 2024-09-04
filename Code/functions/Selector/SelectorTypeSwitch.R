@@ -8,6 +8,7 @@ SelectorTypeSwitchFunc = function(ModelType,
                                   TestSet,
                                   TrainingSet, 
                                   CandidateSet, 
+                                  CovariateList,
                                   LabelProbabilities){
   switch(SelectorType,
          Random = {
@@ -20,6 +21,7 @@ SelectorTypeSwitchFunc = function(ModelType,
                                                        TestSet = TestSet,
                                                        TrainingSet = TrainingSet,
                                                        CandidateSet = CandidateSet,
+                                                       CovariateList,
                                                        SelectorN = SelectorN)})
   
   return(SelectorDataSets)

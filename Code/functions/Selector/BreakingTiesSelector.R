@@ -6,61 +6,72 @@ BreakingTiesSelectorFunc = function(LabelProbabilities,
                                     TestSet, 
                                     TrainingSet, 
                                     CandidateSet, 
+                                    CovariateList,
                                     ModelType,
-                                    SelectorN=1){
+                                    SelectorN){
   
   ### Last Observations ###
-  if(nrow(CandidateSet) ==1){
+  if(nrow(CandidateSet) <= SelectorN){
     
     SelectedObservation = CandidateSet
+    SelectedObservationID = c(SelectedObservation$ID, rep(NA,SelectorN - nrow(CandidateSet)))
     TrainingSet = rbind(TrainingSet, SelectedObservation)
     CandidateSet = CandidateSet[CandidateSet$ID != SelectedObservation$ID,]
     
     return(list(TrainingSet = TrainingSet,
-                CandidateSet = CandidateSet))
+                CandidateSet = CandidateSet,
+                SelectedObservationID = SelectedObservationID))
   }else{
   
   ### Most Uncertain Observation ###
     MostUncertainObs = MostUncertainObservationsFunc(LabelProbabilities = LabelProbabilities, 
                                                      TestSet = TestSet, 
                                                      TrainingSet = TrainingSet, 
-                                                     CandidateSet = CandidateSet, 
-                                                     ModelType = ModelType,
-                                                     SelectorN=SelectorN)
+                                                     CandidateSet = CandidateSet,
+                                                     CovariateList,
+                                                     ModelType = ModelType)
   
-  ### Distance Metric - or use norm? ###
-  # (dist(rbind(MostUncertainObs[, setdiff(names(MostUncertainObs), c("YStar"))],
-  #            CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "YStar"))]),
-  #      method = "euclidean") %>%
-  #   as.matrix)[,1] -> DistMatrix
-  # sort(DistMatrix,partial=length(DistMatrix)-1)[length(DistMatrix)-1]
+  ### Distance Metric###
     
-  VarCovMatrix = cov(rbind(MostUncertainObs,
-                           CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "MalDistance"))]))
-  MalDistance = try(stats::mahalanobis(x = as.matrix(CandidateSet[, setdiff(names(CandidateSet), c("ID", "Y", "MalDistance"))]),
-                                       center = as.matrix(MostUncertainObs),  
-                                       cov = VarCovMatrix),
-                    silent = TRUE)
-    
-    if(inherits(MalDistance, 'try-error')){
-      return(list(TrainingSet = TrainingSet,
-                  CandidateSet = CandidateSet))
-    }else{
-      CandidateSet$MalDistance = MalDistance
-    }
+    ## Norm ##
+  (dist(rbind(MostUncertainObs[, CovariateList],CandidateSet[, CovariateList]),
+        method = "euclidean") %>%
+    as.matrix)[,1] -> NormDistance
+    NormDistance = NormDistance[names(NormDistance) != rownames(MostUncertainObs)]
+
+  #   ## Mahlanobis Distance ##
+  # VarCovMatrix = cov(rbind(MostUncertainObs,
+  #                          CandidateSet[, CovariateList]))
+  # MalDistance = try(stats::mahalanobis(x = as.matrix(CandidateSet[, CovariateList]),
+  #                                      center = as.matrix(MostUncertainObs),  
+  #                                      cov = VarCovMatrix),
+  #                   silent = TRUE)
+  #   
+  #   if(inherits(MalDistance, 'try-error')){
+  #     print("MalDistance Error")
+  #     return(list(TrainingSet = TrainingSet,
+  #                 CandidateSet = CandidateSet))
+  #   }else{
+  #     CandidateSet$MalDistance = MalDistance
+  #   }
+  
+  ## Set Distance ##
+  DistanceMetric = NormDistance
+  CandidateSet$DistanceMetric = DistanceMetric
 
   ### Matched Candidate Data ###
-  MatchedCandidateRowNum = sort(CandidateSet$MalDistance,index.return = TRUE)$ix[1:SelectorN]
+  MatchedCandidateRowNum = (sort(CandidateSet$DistanceMetric,index.return = TRUE)$ix)[1:SelectorN]
   SelectedObservation = CandidateSet[MatchedCandidateRowNum,]
   
   ### Set Mutation ###
   TrainingSet = rbind(TrainingSet[, setdiff(names(TrainingSet), c("BreakingTiesProb"))], 
-                      SelectedObservation[, setdiff(names(SelectedObservation), c("MalDistance"))])
-  CandidateSet = CandidateSet[CandidateSet$ID != SelectedObservation$ID, 
-                              setdiff(names(CandidateSet), c("MalDistance"))]
+                      SelectedObservation[, setdiff(names(SelectedObservation), c("DistanceMetric"))])
+  
+  CandidateSet = CandidateSet[!(CandidateSet$ID %in% SelectedObservation$ID), setdiff(names(CandidateSet), c("DistanceMetric"))]
   
   return(list(TrainingSet = TrainingSet,
-              CandidateSet = CandidateSet))
+              CandidateSet = CandidateSet,
+              SelectedObservationID = SelectedObservation$ID))
   }
 }
 

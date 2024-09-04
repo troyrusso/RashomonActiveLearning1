@@ -5,21 +5,21 @@
 if(exists("directory")){
   
   source(paste0(directory,"Code/functions/Selector/BreakingTiesSelector.R"))
-  source(paste0(directory,"Code/functions/Selector/ModelTypeSwitch.R"))
+  source(paste0(directory,"Code/functions/Prediction/ModelTypeSwitch.R"))
   source(paste0(directory,"Code/functions/Selector/MostUncertainObservation.R"))
   source(paste0(directory,"Code/functions/Selector/RandomSelector.R"))
   source(paste0(directory,"Code/functions/Selector/RandomStart.R"))
   source(paste0(directory,"Code/functions/Selector/SelectorTypeSwitch.R"))
   source(paste0(directory,"Code/functions/Selector/StoppingCriteria.R"))
-  source(paste0(directory,"Code/functions/Selector/TestError.R"))
-  source(paste0(directory,"Code/functions/Selector/Validation.R"))
+  source(paste0(directory,"Code/functions/Prediction/TestError.R"))
+  source(paste0(directory,"Code/functions/Auxiliary/Validation.R"))
   
-  source(paste0(directory,"Code/functions/Plots/ActiveLearningPlot.R"))
-  source(paste0(directory,"Code/functions/Plots/ClassErrorPlot.R"))
-  source(paste0(directory,"Code/functions/Plots/SelectorTypeComparisonPlotFunc.R"))
+  source(paste0(directory,"Code/functions/Plot/ActiveLearningPlot.R"))
+  source(paste0(directory,"Code/functions/Plot/ClassErrorPlot.R"))
+  source(paste0(directory,"Code/functions/Plot/SelectorTypeComparisonPlotFunc.R"))
   
   source(paste0(directory,"Code/functions/Main/GenerateData.R"))
-  source(paste0(directory,"Code/functions/Main/RashomonFunc.R"))
+  source(paste0(directory,"Code/functions/Prediction/RashomonFunc.R"))
   source(paste0(directory,"Code/functions/Main/SimulationFunc.R"))
   
   source(paste0(directory,"rashomon-tva-R-main/R/aggregate.R"))
@@ -34,19 +34,21 @@ if(exists("directory")){
 }else if(!exists("directory")){
   
   source("Code/functions/Selector/BreakingTiesSelector.R")
-  source("Code/functions/Selector/ModelTypeSwitch.R")
+  source("Code/functions/Prediction/ModelTypeSwitch.R")
   source("Code/functions/Selector/MostUncertainObservation.R")
   source("Code/functions/Selector/RandomSelector.R")
   source("Code/functions/Selector/RandomStart.R")
   source("Code/functions/Selector/SelectorTypeSwitch.R")
   source("Code/functions/Selector/StoppingCriteria.R")
-  source("Code/functions/Selector/TestError.R")
-  source("Code/functions/Selector/Validation.R")
-  source("Code/functions/Plots/ActiveLearningPlot.R")
-  source("Code/functions/Plots/ClassErrorPlot.R")
-  source("Code/functions/Plots/SelectorTypeComparisonPlotFunc.R")
+  source("Code/functions/Prediction/TestError.R")
+  source("Code/functions/Auxiliary/Validation.R")
+  
+  source("Code/functions/Plot/ActiveLearningPlot.R")
+  source("Code/functions/Plot/ClassErrorPlot.R")
+  source("Code/functions/Plot/SelectorTypeComparisonPlotFunc.R")
+  
   source("Code/functions/Main/GenerateData.R")
-  source("Code/functions/Main/RashomonFunc.R")
+  source("Code/functions/Prediction/RashomonFunc.R")
   source("Code/functions/Main/SimulationFunc.R")
   
   source("rashomon-tva-R-main/R/aggregate.R")

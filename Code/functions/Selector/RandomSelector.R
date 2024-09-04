@@ -5,16 +5,31 @@
 ### Output:
 # dat: A training set and a candidate set
 
-RandomSelectorFunc = function(SelectorN = 1, TrainingSet, CandidateSet){
+RandomSelectorFunc = function(SelectorN, TrainingSet, CandidateSet){
   
-  ### Sample ###
-  SelectedIndex = sample(CandidateSet$ID, 1)
-  SelectedObservation = CandidateSet[CandidateSet$ID == SelectedIndex,]
+  ### Last Observations ###
+  if(nrow(CandidateSet) <= SelectorN){
+    
+    SelectedObservation = CandidateSet
+    SelectedObservationID = c(SelectedObservation$ID, rep(NA,SelectorN - nrow(CandidateSet)))
+    TrainingSet = rbind(TrainingSet, SelectedObservation)
+    CandidateSet = CandidateSet[CandidateSet$ID != SelectedObservation$ID,]
 
-  ### Set Mutation ###
-  TrainingSet = rbind(TrainingSet, SelectedObservation)
-  CandidateSet = CandidateSet[CandidateSet$ID != SelectedIndex,]
-
-  return(list(TrainingSet = TrainingSet,
-              CandidateSet = CandidateSet))
+    return(list(TrainingSet = TrainingSet,
+                CandidateSet = CandidateSet,
+                SelectedObservationID = SelectedObservationID))
+  }else{
+    
+    ### Sample ###
+    SelectedIndex = sample(CandidateSet$ID, SelectorN)
+    SelectedObservation = CandidateSet[CandidateSet$ID %in% SelectedIndex,]
+  
+    ### Set Mutation ###
+    TrainingSet = rbind(TrainingSet, SelectedObservation)
+    CandidateSet = CandidateSet[!(CandidateSet$ID %in% SelectedObservation$ID),]
+  
+    return(list(TrainingSet = TrainingSet,
+                CandidateSet = CandidateSet,
+                SelectedObservationID = SelectedObservation$ID))
+  }
 }

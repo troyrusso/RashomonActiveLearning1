@@ -57,14 +57,16 @@ GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins = N
   
   ### Probabilities ###
   Logit = X %*% t(TrueBetas)
-  Logit = cbind(0, Logit)#
-  Probs = exp(Logit)/rowSums(exp(Logit))#
-
-  # ### Labels ###
-  Y = apply(Probs, 1, function(p) sample(1:NClass, size = 1, prob = p))-1
+  YStar = Logit + rnorm(n = NClass*N, mean = 0, sd = 1)
   
-  # ### Preliminary Data Set ###
-  PrelimDat = data.frame(Y = as.factor(Y), X = X)
+  Logit = cbind(0, Logit)
+  Probs = exp(Logit)/rowSums(exp(Logit))
+
+  ### Labels ###
+  Y = apply(Probs, 1, function(p) sample(1:NClass, size = 1, prob = p)) - 1
+  
+  ### Preliminary Data Set ###
+  PrelimDat = data.frame(Y = as.factor(Y), YStar = YStar, X = X)
   
   ### Class Proportion ###
   NClassSamples = round(N * ClassProportion)
@@ -74,7 +76,7 @@ GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins = N
                                                 size = NClassSamples[c+1],
                                                 replace = TRUE))                 #### SHOULD THIS BE TRUE
   dat = cbind(ID = 1:N,PrelimDat[unlist(IndicesList), ])
-  colnames(dat) = c("ID", "Y", paste0("X", 1:K))
+  colnames(dat) = c("ID", "Y", "YStar", paste0("X", 1:K))
   rownames(dat) = dat$ID
   
   ### Return ###

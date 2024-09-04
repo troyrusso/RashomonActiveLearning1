@@ -7,20 +7,23 @@ MostUncertainObservationsFunc = function(LabelProbabilities,
                                          TrainingSet, 
                                          CandidateSet, 
                                          ModelType,
-                                         SelectorN=1){
+                                         CovariateList){
   
-  ### Selector ###
-  ProbMax1 = apply(X = LabelProbabilities[, setdiff(colnames(LabelProbabilities), "ID")], 
-                   MARGIN = 1, 
-                   FUN = max)
-  ProbMax2 = apply(X = LabelProbabilities[, setdiff(colnames(LabelProbabilities), "ID")], 
-                   MARGIN = 1, 
-                   FUN = function(x) {sort(x,partial=length(x)-1)[length(x)-1]})
-  TestSet$BreakingTiesProb = ProbMax1 - ProbMax2
-  IDRec = arrange(TestSet, BreakingTiesProb)$ID[1:SelectorN]
-  MostUncertainObs = TestSet[TestSet$ID==IDRec, 
-                             setdiff(names(TestSet), c("ID", "Y", "BreakingTiesProb"))]
-  
+  if(ModelType %in% c("Linear","RashomonLinear")){
+    TestSet = cbind(TestSet, LabelProbabilities)
+    IDRec = arrange(TestSet, desc(LabelProbabilities))$ID[1]
+    MostUncertainObs = TestSet[TestSet$ID %in% IDRec, CovariateList]
+  }else if(!(ModelType %in% c("Linear","RashomonLinear"))){
+    ProbMax1 = apply(X = LabelProbabilities[, setdiff(colnames(LabelProbabilities), "ID")], 
+                     MARGIN = 1, 
+                     FUN = max)
+    ProbMax2 = apply(X = LabelProbabilities[, setdiff(colnames(LabelProbabilities), "ID")], 
+                     MARGIN = 1, 
+                     FUN = function(x) {sort(x,partial=length(x)-1)[length(x)-1]})
+    TestSet$BreakingTiesProb = ProbMax1 - ProbMax2
+    IDRec = arrange(TestSet, BreakingTiesProb)$ID[1]
+    MostUncertainObs = TestSet[TestSet$ID %in% IDRec, CovariateList]
+  }
   return(MostUncertainObs)
   
 }

@@ -6,13 +6,13 @@
 ValidationFunc = function(dat, SelectorType, ModelType){
   
   SelectorTypeList = c("Random", "BreakingTies")
-  ModelTypeList = c("Logistic", "LASSO", "Multinomial", "MultinomLASSO", "RandomForest")
+  ModelTypeList = c("Logistic", "LASSO", "Multinomial", "MultinomLASSO", "RandomForest", "Linear", "RashomonLinear")
   
   if(!(SelectorType %in% SelectorTypeList)){
-  stop("SelectorType has to be Random or BreakingTies")}
+  stop("SelectorType not supported.")}
   
   if(!(ModelType %in% ModelTypeList)){
-  stop("ModelType has to be Logistic, LASSO, Multinomial, MultinomLASSO, or RandomForest")
+  stop("ModelType not supported.")
   }
   
   if(length(unique(dat$Y)) > 2 & ModelType %in% c("Logistic", "LASSO")){
