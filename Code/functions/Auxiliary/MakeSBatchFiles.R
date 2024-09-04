@@ -11,18 +11,21 @@ ParameterVector <- read.csv(paste0(dir,"/ParameterVectorALL.csv"))
 for (i in 1:nrow(ParameterVector)) {
   job_name = ParameterVector[i, "JobName"]
   seed = ParameterVector[i, "seed"]
+  ModelType = ParameterVector[i, "ModelType"]
+  SelectorType = ParameterVector[i, "SelectorType"]
   N = ParameterVector[i, "N"]
   K = ParameterVector[i, "K"]
   NClass = ParameterVector[i, "NClass"]
-  ClassProportion = ParameterVector[i, "ClassProportion"]
   CovCorrVal = ParameterVector[i, "CovCorrVal"]
   NBins = ParameterVector[i, "NBins"]
-  ModelType = ParameterVector[i, "ModelType"]
-  SelectorType = ParameterVector[i, "SelectorType"]
   TestProportion = ParameterVector[i, "TestProportion"]
   SelectorN = ParameterVector[i, "SelectorN"]
   InitialN = ParameterVector[i, "InitialN"]
+  reg = ParameterVector[i, "reg"]
+  theta = ParameterVector[i, "theta"]
+  LabelName = ParameterVector[i, "LabelName"]
   output = ParameterVector[i, "Output"]
+  
 
   
   # Create .sbatch file for the current simulation
@@ -34,10 +37,10 @@ for (i in 1:nrow(ParameterVector)) {
     c(
       "#!/bin/bash",
       paste("#SBATCH --job-name", job_name),
-      "#SBATCH --partition medium",
+      "#SBATCH --partition short",
       "#SBATCH --ntasks 1",
-      "#SBATCH --time 7-00:00:00",
-      "#SBATCH --mem-per-cpu=6000",
+      "#SBATCH --time 11:59:00",
+      "#SBATCH --mem-per-cpu=500",
       paste("#SBATCH -o ClusterMessages/out/myscript_", 
             job_name, 
             "_%j.out", 
@@ -53,22 +56,23 @@ for (i in 1:nrow(ParameterVector)) {
       "module load R",
       "Rscript Code/functions/Main/RunSimulation.R \\",
       
+     paste("    --job_name ", job_name, "\\", sep=""),
+     paste("    --seed ", seed, "\\", sep=""),
+     paste("    --ModelType ", ModelType, "\\", sep=""),
+     paste("    --SelectorType ", SelectorType, "\\", sep=""),
+     paste("    --N ", N, "\\", sep=""),
+     paste("    --K ", K, "\\", sep=""),
+     paste("    --NClass ", NClass, "\\", sep=""),
+     paste("    --CovCorrVal ", CovCorrVal, "\\", sep=""),
+     paste("    --NBins ", NBins, "\\", sep=""),
+     paste("    --TestProportion ", TestProportion, "\\", sep=""),
+     paste("    --SelectorN ", SelectorN, "\\", sep=""),
+     paste("    --InitialN ", InitialN, "\\", sep=""),
+     paste("    --reg ", reg, "\\", sep=""),
+     paste("    --theta ", theta, "\\", sep=""),
+     paste("    --LabelName ", LabelName, "\\", sep=""),
+     paste("    --output ", output, "\\", sep="")
       
-      
-      paste("    --job_name ", job_name, "\\", sep=""),
-      paste("    --seed ", seed, " \\", sep=""),
-      paste("    --N ", N, " \\", sep=""),
-      paste("    --K ", K, " \\", sep=""),
-      paste("    --NClass ", NClass, " \\", sep=""),
-      paste("    --ClassProportion ", ClassProportion, " \\", sep=""),
-      paste("    --CovCorrVal '", CovCorrVal, "' \\", sep=""),
-      paste("    --NBins ", NBins, " \\", sep=""),
-      paste("    --ModelType ", ModelType, " \\", sep=""),
-      paste("    --SelectorType ", SelectorType, " \\", sep=""),
-      paste("    --TestProportion ", TestProportion, " \\", sep=""),
-      paste("    --SelectorN ", SelectorN, " \\", sep=""),
-      paste("    --InitialN '", InitialN, "' \\", sep=""),
-      paste("    --output ", output, " \\", sep="")
     ),
     con=sbatch_file
   )

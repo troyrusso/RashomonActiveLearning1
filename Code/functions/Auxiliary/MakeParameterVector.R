@@ -7,58 +7,70 @@ library(tidyverse)
 rm(list=ls())
 dir = paste0("/Users/simondn/Documents/RashomonActiveLearning/Code/Cluster/")
 
-seed = 1234567890
-N = 1000
-K = 4
-NClass = 2
-# ClassProportion = c(3/5, 2/5)
-ClassProportion = rep(1/NClass, NClass)
-MeanMatrix = rep(0,K)
-CovCorrVal = -0.9
-TestProportion = 0.2
-SelectorN = 1
-InitialN = 10
-ModelType = "LASSO" #Supported Types: Logistic, LASSO, Multinomial, MultinomLASSO, RandomForest
-NBins = 3
+# seed = args$seed
+# N = args$N
+# K = args$K
+# NClass = args$NClass
+# # ClassProportion = args$ClassProportion
+# CovCorrVal = args$CovCorrVal
+# NBins = args$NBins
+# ModelType = args$ModelType
+# SelectorType = args$SelectorType
+# TestProportion = args$TestProportion
+# SelectorN = args$SelectorN
+# InitialN = args$InitialN
+# reg = args$reg
+# theta = args$theta
+# LabelName = args$LabelName
+# Output = args$Output
+
 
 ExpandGridCombinations = expand.grid(seed = seq(1:20),
-                                     N = c(1000),
+                                     ModelType = c("Factorial", "RashomonLinear"),
+                                     SelectorType = c("Random", "BreakingTies"),
+                                     # N = c(1000),
+                                     # N = c(5000),
+                                     N = c(100),
                                      K = c(4),
                                      NClass = c(2),
-                                     ClassProportion = c(NA),
+                                     # ClassProportion = c(NA),
                                      CovCorrVal = c(0),
                                      NBins = c(3),
-                                     ModelType = c("LASSO", "Logistic"),
-                                     SelectorType = c("Random", "BreakingTies"),
                                      TestProportion = c(0.2),
                                      SelectorN = c(1),
-                                     InitialN = c(10))
+                                     InitialN = c(10),
+                                     reg = c(0.1),
+                                     theta = 2,
+                                     LabelName = "YStar")
 
 ### Run SLURM Simulations ###
 Simulation_Combinations = ExpandGridCombinations %>%
   mutate(JobName = paste0("Sim", "_",
+                          ModelType, "_",
+                          SelectorType, "_",
                           seed, "_",
                           N, "_",
                           K, "_",
                           NClass, "_",
-                          ClassProportion, "_",
+                          # ClassProportion, "_",
                           CovCorrVal, "_",
                           NBins, "_",
-                          ModelType, "_",
-                          SelectorType, "_",
                           TestProportion, "_",
                           SelectorN, "_",
-                          InitialN),
+                          InitialN,
+                          reg, "_",
+                          theta, "_",
+                          LabelName, "_"),
          Output = paste0("Results/",
                          seed, "_",
+                         ModelType, "_",
+                         SelectorType, "_",
                          N, "_",
                          K, "_",
                          NClass, "_",
-                         ClassProportion, "_",
+                         # ClassProportion, "_",
                          CovCorrVal, "_",
                          NBins, "_",
-                         ModelType, "_",
-                         SelectorType, "_",
                          TestProportion, "_",
                          SelectorN, "_",
                          InitialN, 

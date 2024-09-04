@@ -54,12 +54,10 @@ K = 4
 NClass = 2
 # ClassProportion = c(3/5, 2/5)
 ClassProportion = rep(1/NClass, NClass)
-MeanMatrix = rep(0,K)
 CovCorrVal = -0.9
 TestProportion = 0.2
 SelectorN = 1
 InitialN = 10
-ModelType = "LASSO" #Supported Types: Logistic, LASSO, Multinomial, MultinomLASSO, RandomForest
 NBins = 3
 ```
 
