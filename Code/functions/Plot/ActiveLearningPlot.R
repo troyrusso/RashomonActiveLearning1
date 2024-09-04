@@ -2,15 +2,18 @@
 ### Inputs:
 ### Output:
 
-ActiveLearningPlotFunc = function(Error, 
+ActiveLearningPlotFunc = function(SimResults,
                                   StopIter, 
-                                  InitialTrainingSetN, 
-                                  SelectorType, 
                                   xlower = NULL, 
                                   xupper = NULL){
   ### Set Up ###
+  Error = SimResults$Error
+  SelectorType = SimResults$SelectorType
+  ModelType = SimResults$ModelType
+  InitialTrainingSetN = SimResults$InitialTrainingSetN
   if(is.null(xlower)){xlower = 0}
   if(is.null(xupper)){xupper = length(Error)+InitialTrainingSetN}
+  
   
   ### Plot ###
   ErrorScatterPlot = ggplot() +
@@ -26,6 +29,6 @@ ActiveLearningPlotFunc = function(Error,
                        lim = c(xlower, xupper)) +
     xlab("Number of annotated observations") +
     ylab("Test Set Error") +
-    ggtitle(paste0("Selector type: ", SelectorType))
+    ggtitle(paste0("Selector type and Predictor Type: ", SelectorType, ", ", ModelType))
   
 }

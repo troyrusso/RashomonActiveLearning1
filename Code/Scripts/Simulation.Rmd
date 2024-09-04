@@ -48,7 +48,7 @@ if(exists("directory")){
 ```{r}
 ### Input ###
 # seed = 1234567890
-seed = 123
+seed = 3
 N = 100
 K = 4
 NClass = 2
@@ -143,29 +143,30 @@ ModelList2 = SimResults2$ModelList
 ### Stop Iter ###
 TailN = 10
 VarThreshold = 0.2
-ErrorThreshold = 1.1
+ErrorThreshold = 0
 StopIter1 = StoppingCriteriaFunc(SimResults1, 
                                  ErrorThreshold = ErrorThreshold,
                                  VarThreshold = VarThreshold, 
                                  TailN = TailN)
 StopIter2 = StoppingCriteriaFunc(SimResults2, 
-                                            ErrorThreshold = ErrorThreshold,
-                                            VarThreshold = VarThreshold, 
-                                            TailN = TailN)
+                                 ErrorThreshold = ErrorThreshold,
+                                 VarThreshold = VarThreshold, 
+                                 TailN = TailN)
 
 ### Plots ###
 xupper = NULL
 
-ActiveLearningPlotFunc(Error = SimResults1$Error,
+ClassErrorPlotFunc(SimulationResults = SimResults1,
+                   xupper = xupper) -> ClassErrorPlot1
+ClassErrorPlotFunc(SimulationResults = SimResults2,
+                   xupper = xupper) -> ClassErrorPlot2
+
+ActiveLearningPlotFunc(SimResults = SimResults1,
                        StopIter = StopIter1,
-                       SelectorType = SimResults1$SelectorType,
-                       InitialTrainingSetN = SimResults1$InitialTrainingSetN,
                        xupper = xupper) -> ALPlot1
 
-ActiveLearningPlotFunc(Error = SimResults2$Error,
+ActiveLearningPlotFunc(SimResults = SimResults2,
                        StopIter = StopIter2,
-                       SelectorType = SimResults2$SelectorType,
-                       InitialTrainingSetN = SimResults2$InitialTrainingSetN,
                        xupper = xupper) -> ALPlot2
 
 SelectorTypeComparisonPlotFunc(SimulationType1 = SimResults1,
@@ -173,11 +174,6 @@ SelectorTypeComparisonPlotFunc(SimulationType1 = SimResults1,
                                StopIter1 = StopIter1,
                                StopIter2 = StopIter2,
                                xupper = xupper) -> SelectorTypeComparisonPlot
-
-ClassErrorPlotFunc(SimulationResults = SimResults1,
-                   xupper = xupper) -> ClassErrorPlot1
-ClassErrorPlotFunc(SimulationResults = SimResults2,
-                   xupper = xupper) -> ClassErrorPlot2
 ```
 
 ```{r}

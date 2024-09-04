@@ -38,6 +38,10 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
   JointErrors = pivot_longer(JointErrors, -c(iter))
   colnames(JointErrors) = c("iter", "SelectorType", "value")
   
+  JointErrors = JointErrors %>%
+    mutate(SelectorType = case_when(SelectorType == "BreakingTiesFactorial" ~ "Vanilla",
+                                    SelectorType == "BreakingTiesRashomonLinear" ~ "Rashomon"))
+  
   # Stop Iter Line
   # JointStopIter = c(SimulationType1$StopIter,SimulationType1$SelectorType,
   #                   SimulationType2$StopIter,SimulationType2$SelectorType) %>%
@@ -55,21 +59,22 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
     ## Iteration Stop Line ##
     geom_vline(xintercept = StopIter1,
                color = "red",
-               linetype = "dashed") + 
+               linetype = "solid") + 
     
     geom_vline(xintercept = StopIter2,
                color = "red",
-               linetype = "solid") + 
+               linetype = "dashed") + 
     
     ## Aesthetics ##
-    scale_x_continuous(breaks = c(seq(xlower,xupper, 100), 
+    scale_x_continuous(breaks = c(seq(xlower,xupper, 10), 
                                   StopIter1,
                                   StopIter2, 
                                   SimulationType1$InitialTrainingSetN),
                        lim = c(xlower, xupper))    +
     xlab("Number of annotated observations") +
-    ylab("Test Set Error") +
-    ggtitle("Simulation by Error") +
+    # ylab("Test Set Error") +
+    ylab("Training Set Error") +
+    ggtitle("Simulation") +
     theme(plot.title = element_text(size = 15, hjust = 0.5))
   
   return(ErrorScatterPlot)
