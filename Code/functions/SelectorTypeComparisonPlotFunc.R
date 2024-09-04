@@ -32,10 +32,8 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
   # Error Lines #
   JointErrors = data.frame(cbind(SimulationType1$Error, SimulationType2$Error))
   JointErrors$iter = (SimulationType1$InitialTrainingSetN+1):(length(SimulationType1$Error)+SimulationType1$InitialTrainingSetN)
-  colnames(JointErrors) = c(paste0(SimulationType1$SelectorType, SimulationType1$ModelType),
-                            paste0(SimulationType2$SelectorType, SimulationType2$ModelType),
-                            "iter")
-  JointErrors = pivot_longer(JointErrors, -c(iter))
+  colnames(JointErrors) = c(SimulationType1$SelectorType, SimulationType2$SelectorType, "iter")
+  JointErrors = pivot_longer(JointErrors, c(Random, BreakingTies))
   colnames(JointErrors) = c("iter", "SelectorType", "value")
   
   # Stop Iter Line

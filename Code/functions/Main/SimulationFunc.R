@@ -69,25 +69,33 @@ SimulationFunc = function(dat,
     
     Model = ModelTypeSwitchResults$Model
     ModelList[[iter]] = Model
-    if(ModelType=="RashomonLinear"){
+    
+    ### Rashomon or not ###
+    if(ModelType %in% c("RashomonLinear", "Factorial")){
 
     ### Error and Stopping Criteria ### 
     
-    ### START FOR NOW - LOOK THIS SHIT OVER HAHAHAH ;-; .-. D: ###
+    ### START FOR NOW - LOOK THIS SHIT OVER HAHAHAHA ;-; .-. D: ###
       RashomonModelLosses = ModelTypeSwitchResults$RashomonModelLosses
       TestSet = TrainingSet                                                                # DELETE LATER
       TestPredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
       PredictionDifference = (TestPredictedLabels - data.frame(TestSet)[,LabelName])^2
-      DifferenceTimesLosses= PredictionDifference %*% diag(RashomonModelLosses)
-      LabelProbabilities = rowSums(DifferenceTimesLosses)
+      if(length(RashomonModelLosses) ==1){
+        DifferenceTimesLosses= PredictionDifference * RashomonModelLosses
+        LabelProbabilities = DifferenceTimesLosses}else if(length(RashomonModelLosses) >=1){
+        DifferenceTimesLosses= PredictionDifference %*%  diag(RashomonModelLosses)
+        LabelProbabilities = rowSums(DifferenceTimesLosses)
+        }
+      
     
-      Error[iter] = mean(TestPredictedLabels - TestSet$YStar)^2             # How is "error" measured? This is over the entire Rashomon set.
+      # Error[iter] = mean(TestPredictedLabels - TestSet$YStar)^2             # How is "error" measured? This is over the entire Rashomon set.
+      Error[iter] = RashomonModelLosses[1]
       ClassError[iter,] = tapply(X = 1:length(TestSet$Y),                          # Likewise with class error - over the whole Rashomon set.
                           INDEX = TestSet$Y, 
                           FUN = function(i) mean((TestPredictedLabels[i] - TestSet$YStar[i])^2)) %>%
         as.vector
       
-    }else if(ModelType != "RashomonLinear"){                                               # DELETE LATER
+    }else if(!ModelType %in% c("RashomonLinear", "Factorial")){                                               # DELETE LATER
       TestErrorResults = TestErrorFunction(Model, ModelType, TestSet, CovariateList, LabelName)
       TestSetPrediction[iter ,] = TestErrorResults$TestPredictedLabels
       LabelProbabilities = TestErrorResults$TestPredictedProbabilities
@@ -127,6 +135,7 @@ SimulationFunc = function(dat,
               Error = Error,
               ClassError = ClassError,
               SelectorType = SelectorType,
+              ModelType = ModelType,
               TestSet = TestSet,
               TestSetPrediction = TestSetPrediction,
               InitialTrainingSetN = InitialTrainingSetN,

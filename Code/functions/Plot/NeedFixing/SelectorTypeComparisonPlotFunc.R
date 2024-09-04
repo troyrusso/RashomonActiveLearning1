@@ -15,7 +15,7 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
   if(SimulationType1$InitialTrainingSetN != SimulationType2$InitialTrainingSetN){
     stop("Starting points are not the same.")
   }
-
+  
   if(length(SimulationType1$Error) != length(SimulationType2$Error)){
     stop("Ending points are not the same.")
   }  
@@ -23,19 +23,17 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
   if((SimulationType1$Error[length(SimulationType1$Error)] - SimulationType2$Error[length(SimulationType2$Error)])>1e-5){
     warning("The error rate with all observations labelled are not the same.")
   }
-
+  
   ### Set Up ###
   if(is.null(xlower)){xlower = 0}
   if(is.null(xupper)){xupper = length(SimulationType1$Error)+SimulationType1$InitialTrainingSetN}
-
+  
   
   # Error Lines #
   JointErrors = data.frame(cbind(SimulationType1$Error, SimulationType2$Error))
   JointErrors$iter = (SimulationType1$InitialTrainingSetN+1):(length(SimulationType1$Error)+SimulationType1$InitialTrainingSetN)
-  colnames(JointErrors) = c(paste0(SimulationType1$SelectorType, SimulationType1$ModelType),
-                            paste0(SimulationType2$SelectorType, SimulationType2$ModelType),
-                            "iter")
-  JointErrors = pivot_longer(JointErrors, -c(iter))
+  colnames(JointErrors) = c(SimulationType1$SelectorType, SimulationType2$SelectorType, "iter")
+  JointErrors = pivot_longer(JointErrors, c(Random, BreakingTies))
   colnames(JointErrors) = c("iter", "SelectorType", "value")
   
   # Stop Iter Line

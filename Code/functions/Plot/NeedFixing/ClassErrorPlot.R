@@ -13,7 +13,7 @@ ClassErrorPlotFunc = function(SimulationResults, xlower = NULL, xupper = NULL){
     mutate(iter = (SimulationResults$InitialTrainingSetN+1):(nrow(SimulationResults$ClassError)+SimulationResults$InitialTrainingSetN)) %>%
     pivot_longer(-iter)
   colnames(ClassErrorDat) = c("iter", "Class", "error")
-
+  
   ### Plot ###
   ErrorClassPlot = ggplot() + 
     geom_line(data = ClassErrorDat,

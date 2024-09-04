@@ -6,7 +6,7 @@
 ValidationFunc = function(dat, SelectorType, ModelType){
   
   SelectorTypeList = c("Random", "BreakingTies")
-  ModelTypeList = c("Logistic", "LASSO", "Multinomial", "MultinomLASSO", "RandomForest", "Linear", "RashomonLinear")
+  ModelTypeList = c("Logistic", "LASSO", "Multinomial", "MultinomLASSO", "RandomForest", "Linear", "RashomonLinear", "Factorial")
   
   if(!(SelectorType %in% SelectorTypeList)){
   stop("SelectorType not supported.")}

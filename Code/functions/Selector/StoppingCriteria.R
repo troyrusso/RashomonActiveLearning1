@@ -31,7 +31,7 @@ RollingError = sapply(X = TailN:length(SimulationType$Error),
 RollVarIndx = which(RollingVariance <= VarThreshold)
 RollErrorIndx = which(RollingError <= ErrorThreshold)
 
-StopIter = intersect(RollVarIndx,RollErrorIndx)[1]+TailN +SimResultsRandom$InitialTrainingSetN
+StopIter = intersect(RollVarIndx,RollErrorIndx)[1]+TailN +SimulationType$InitialTrainingSetN
 
 return(StopIter)
 

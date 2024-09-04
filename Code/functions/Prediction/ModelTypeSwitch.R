@@ -115,18 +115,30 @@ ModelTypeSwitchFunc = function(TrainingSet,
          RashomonProfile = RashomonProfileFunc(TrainingSet, CovariateList, LabelName, RashomonParameters)
          TrainingPredictedLabels = RashomonProfile$TrainingPredictedLabels
          TrainingLabelProbabilities = NULL
-         Model = RashomonProfile$RashomonMakeObjects
+         # Model = RashomonProfile$RashomonMakeObjects
+         Model = NULL
          RashomonModelLosses = RashomonProfile$RashomonLosses
          
          # PredictionDifference = abs(TrainingPredictedLabels - data.frame(TrainingSet)[,LabelName])
-       }
+       },
+       Factorial = {
+         RashomonProfile = RashomonProfileFunc(TrainingSet, CovariateList, LabelName, RashomonParameters)
+         TrainingPredictedLabels = RashomonProfile$TrainingPredictedLabels[,1]
+         TrainingLabelProbabilities = NULL
+         # Model = RashomonProfile$RashomonMakeObjects
+         Model = NULL
+         RashomonModelLosses = RashomonProfile$RashomonLosses[1]
+         
+         # PredictionDifference = abs(TrainingPredictedLabels - data.frame(TrainingSet)[,LabelName])
+       },
+       
   )
   
   
   ReturnList = list(Model = Model,
                     TrainingPredictedLabels = TrainingPredictedLabels,
                     TrainingLabelProbabilities = TrainingLabelProbabilities)
-  if(ModelType == "RashomonLinear"){ReturnList = c(ReturnList, RashomonModelLosses = list(RashomonModelLosses))}
+  if(ModelType %in% c("RashomonLinear", "Factorial")){ReturnList = c(ReturnList, RashomonModelLosses = list(RashomonModelLosses))}
   
   return(ReturnList)
   }

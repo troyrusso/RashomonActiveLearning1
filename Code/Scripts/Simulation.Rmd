@@ -89,58 +89,56 @@ RashomonParameters = list(K = K,
 ```{r}
 LabelName = "YStar"
 SelectorN = 1
-# ModelType = "Linear"
-ModelType = "RashomonLinear"
 ```
 
 ```{r}
-SelectorType = "BreakingTies"
+# ModelType = "Linear"
+# ModelType = "RashomonLinear"
+# ModelType = "Factorial"
+# SelectorType = "BreakingTies"
 # iter=1
 ``` 
 
 ```{r}
 SimulationFunc(dat = dat,
-               LabelName,
-               CovariateList,
+               LabelName = LabelName,
+               CovariateList = CovariateList,
                TestProportion = TestProportion,
-               SelectorType = "Random",
+               SelectorType = "BreakingTies",
                SelectorN = SelectorN,
-               ModelType = ModelType,
+               ModelType = "Factorial",
                InitialN = InitialN,
-               seed = seed) -> SimResultsRandom
-```
-
-```{r}
-SelectorTypeSwitchFunc(ModelType = ModelType,
-                                              SelectorType = SelectorType, 
-                                              SelectorN = SelectorN,
-                                              TestSet = TestSet,
-                                              TrainingSet = TrainingSet, 
-                                              CandidateSet = CandidateSet,
-                                              CovariateList = CovariateList,
-                                              LabelProbabilities = LabelProbabilities)
+               RashomonParameters = RashomonParameters,
+               seed = seed) -> SimResultsBreakingTiesFactorial
 ```
 
 ```{r}
 SimulationFunc(dat = dat,
-               LabelName,
-               CovariateList,
+               LabelName = LabelName,
+               CovariateList = CovariateList,
                TestProportion = TestProportion,
                SelectorType = "BreakingTies",
                SelectorN = SelectorN,
-               ModelType = ModelType,
+               ModelType = "RashomonLinear",
                InitialN = InitialN,
-               seed = seed) -> SimResultsBreakingTies
+               RashomonParameters = RashomonParameters,
+               seed = seed) -> SimResultsBreakingTiesRashomon
 
 ```
 
 ## Visualize
-```{r}
-TestSetPredictionsRandom = SimResultsRandom$TestSetPrediction
-TestSetPredictionsBreakingTies = SimResultsBreakingTies$TestSetPrediction
 
-ModelListRandom = SimResultsRandom$ModelList
-ModelListBreakingTies = SimResultsBreakingTies$ModelList
+```{r}
+SimResults1 = SimResultsBreakingTiesFactorial
+SimResults2 = SimResultsBreakingTiesRashomon
+```
+
+```{r}
+TestSetPredictions1 = SimResults1$TestSetPrediction
+TestSetPredictions2 = SimResults2$TestSetPrediction
+
+ModelList1 = SimResults1$ModelList
+ModelList2 = SimResults2$ModelList
 ```
 
 ```{r}
@@ -148,52 +146,47 @@ ModelListBreakingTies = SimResultsBreakingTies$ModelList
 TailN = 10
 VarThreshold = 0.2
 ErrorThreshold = 1.1
-StopIterRandom = StoppingCriteriaFunc(SimResultsRandom, 
-                                      ErrorThreshold = ErrorThreshold,
-                                      VarThreshold = VarThreshold, 
-                                      TailN = TailN)
-StopIterBreakingTies = StoppingCriteriaFunc(SimResultsBreakingTies, 
+StopIter1 = StoppingCriteriaFunc(SimResults1, 
+                                 ErrorThreshold = ErrorThreshold,
+                                 VarThreshold = VarThreshold, 
+                                 TailN = TailN)
+StopIter2 = StoppingCriteriaFunc(SimResults2, 
                                             ErrorThreshold = ErrorThreshold,
                                             VarThreshold = VarThreshold, 
                                             TailN = TailN)
 
-# StopIterRandom = StopIterRandom*SelectorN
-# StopIterBreakingTies = StopIterBreakingTies*SelectorN
-
 ### Plots ###
 xupper = NULL
-ActiveLearningPlotFunc(Error = SimResultsRandom$Error,
-                       StopIter = StopIterRandom,
-                       SelectorType = SimResultsRandom$SelectorType,
-                       SelectorN = SelectorN,
-                       InitialTrainingSetN = SimResultsRandom$InitialTrainingSetN,
-                       xupper = xupper) -> RandomPlot
 
-ActiveLearningPlotFunc(Error = SimResultsBreakingTies$Error,
-                       StopIter = StopIterBreakingTies,
-                       SelectorType = SimResultsBreakingTies$SelectorType,
-                       SelectorN = SelectorN,
-                       InitialTrainingSetN = SimResultsBreakingTies$InitialTrainingSetN,
-                       xupper = xupper) -> BreakingTiesPlot
+ActiveLearningPlotFunc(Error = SimResults1$Error,
+                       StopIter = StopIter1,
+                       SelectorType = SimResults1$SelectorType,
+                       InitialTrainingSetN = SimResults1$InitialTrainingSetN,
+                       xupper = xupper) -> ALPlot1
 
-SelectorTypeComparisonPlotFunc(SimulationType1 = SimResultsRandom,
-                               SimulationType2 = SimResultsBreakingTies,
-                               StopIter1 = StopIterRandom,
-                               StopIter2 = StopIterBreakingTies,
-                               SelectorN = SelectorN,
+ActiveLearningPlotFunc(Error = SimResults2$Error,
+                       StopIter = StopIter2,
+                       SelectorType = SimResults2$SelectorType,
+                       InitialTrainingSetN = SimResults2$InitialTrainingSetN,
+                       xupper = xupper) -> ALPlot2
+
+SelectorTypeComparisonPlotFunc(SimulationType1 = SimResults1,
+                               SimulationType2 = SimResults2,
+                               StopIter1 = StopIter1,
+                               StopIter2 = StopIter2,
                                xupper = xupper) -> SelectorTypeComparisonPlot
 
-ClassErrorPlotFunc(SimulationResults = SimResultsBreakingTies,
-                   xupper = xupper) -> ClassErrorPlotBreakingTies
-ClassErrorPlotFunc(SimulationResults = SimResultsRandom,
-                   xupper = xupper) -> ClassErrorPlotRandom
+ClassErrorPlotFunc(SimulationResults = SimResults1,
+                   xupper = xupper) -> ClassErrorPlot1
+ClassErrorPlotFunc(SimulationResults = SimResults2,
+                   xupper = xupper) -> ClassErrorPlot2
 ```
 
 ```{r}
-# ClassErrorPlotBreakingTies
-# ClassErrorPlotRandom
-# RandomPlot
-# BreakingTiesPlot
+ClassErrorPlot2
+ClassErrorPlot1
+ALPlot1
+ALPlot2
 SelectorTypeComparisonPlot
 ```
 
