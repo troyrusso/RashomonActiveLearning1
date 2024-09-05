@@ -66,7 +66,6 @@ SimulationFunc = function(dat,
                                                  ModelType,
                                                  RashomonParameters = RashomonParameters)
     TrainingSet = data.frame(TrainingSet)[, c("ID", "Y", "YStar", paste0("X",1:length(CovariateList)))]
-    
     Model = ModelTypeSwitchResults$Model
     ModelList[[iter]] = Model
     
@@ -77,16 +76,17 @@ SimulationFunc = function(dat,
     
     ### START FOR NOW - LOOK THIS SHIT OVER HAHAHAHA ;-; .-. D: ###
       RashomonModelLosses = ModelTypeSwitchResults$RashomonModelLosses
+      RashomonProfile = ModelTypeSwitchResults$RashomonProfile
       TestSet = TrainingSet                                                                # DELETE LATER
       TestPredictedLabels = ModelTypeSwitchResults$TrainingPredictedLabels
       PredictionDifference = (TestPredictedLabels - data.frame(TestSet)[,LabelName])^2
       if(length(RashomonModelLosses) ==1){
         DifferenceTimesLosses= PredictionDifference * RashomonModelLosses
-        LabelProbabilities = DifferenceTimesLosses}else if(length(RashomonModelLosses) >=1){
+        LabelProbabilities = DifferenceTimesLosses
+        }else if(length(RashomonModelLosses) >=1){
         DifferenceTimesLosses= PredictionDifference %*%  diag(RashomonModelLosses)
         LabelProbabilities = rowSums(DifferenceTimesLosses)
         }
-      
     
       # Error[iter] = mean(TestPredictedLabels - TestSet$YStar)^2             # How is "error" measured? This is over the entire Rashomon set.
       Error[iter] = RashomonModelLosses[1]
@@ -109,6 +109,8 @@ SimulationFunc = function(dat,
     # LabelProbabilities = TestErrorResults$TestPredictedProbabilities
     # Error[iter] = TestErrorResults$Error
     # ClassError[iter,] = TestErrorResults$ClassError
+    
+    # print(paste0("[Iter ", iter, "] Loss: ", Error[iter]))
     
 
     ### Selector ###

@@ -17,7 +17,9 @@ output:
 
 ## Notes
 
-SelectorPlotFunction is wrong - The non-identical errors at the end are most likely due to the breaking ties distance metric at the end. It's probably throwing away the remaining data that are less than SelectorN/not making the distance metric working \## Libr.
+SelectorPlotFunction is wrong - The non-identical errors at the end are most likely due to the breaking ties distance metric at the end. It's probably throwing away the remaining data that are less than SelectorN/not making the distance metric working 
+
+## Libr.
 
 ```{r message=FALSE, warning=FALSE}
 library(MASS)
@@ -48,13 +50,13 @@ if(exists("directory")){
 ```{r}
 ### Input ###
 # seed = 1234567890
-seed = 3
+seed = 7
 N = 100
 K = 4
 NClass = 2
 # ClassProportion = c(3/5, 2/5)
 ClassProportion = rep(1/NClass, NClass)
-CovCorrVal = -0.9
+CovCorrVal = 0
 TestProportion = 0.2
 SelectorN = 1
 InitialN = 10
@@ -91,7 +93,7 @@ SelectorN = 1
 
 ```{r}
 # ModelType = "Linear"
-# ModelType = "RashomonLinear"
+ModelType = "RashomonLinear"
 # ModelType = "Factorial"
 # SelectorType = "BreakingTies"
 # iter=1
@@ -183,7 +185,6 @@ ALPlot1
 ALPlot2
 SelectorTypeComparisonPlot
 ```
-
 
 
 

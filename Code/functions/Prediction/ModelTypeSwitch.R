@@ -138,7 +138,11 @@ ModelTypeSwitchFunc = function(TrainingSet,
   ReturnList = list(Model = Model,
                     TrainingPredictedLabels = TrainingPredictedLabels,
                     TrainingLabelProbabilities = TrainingLabelProbabilities)
-  if(ModelType %in% c("RashomonLinear", "Factorial")){ReturnList = c(ReturnList, RashomonModelLosses = list(RashomonModelLosses))}
+  if(ModelType %in% c("RashomonLinear", "Factorial")){
+    ReturnList = c(ReturnList, 
+                   RashomonModelLosses = list(RashomonModelLosses),
+                   RashomonProfile = list(RashomonProfile$RashomonMakeObjects)
+                   )}
   
   return(ReturnList)
   }
