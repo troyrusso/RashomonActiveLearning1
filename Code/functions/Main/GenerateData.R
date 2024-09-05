@@ -46,25 +46,12 @@ GenerateDataFunc = function(N, K, NClass, ClassProportion, CovCorrVal, NBins = N
 
   ### Predictors ###
   MeanMatrix = rep(0,K)
-  # X = MASS::mvrnorm(n = NClass*N,
-  #                   mu = MeanMatrix,
-  #                   Sigma = SigmaMatrix)
-  # if(!is.na(NBins)){
-  #   X = apply(X, MARGIN = 2, FUN = function(x) ntile(x, NBins))
-  # }
-  
-  generate_mvrnorm <- function(n, mu, Sigma) {
-    p <- length(mu)
-    Z <- matrix(rnorm(n * p), nrow = n)
-    L <- chol(Sigma)  # Cholesky decomposition of the covariance matrix
-    t(t(Z %*% L) + mu)
-  }
-  X = generate_mvrnorm(n = NClass*N,
-                   mu = MeanMatrix,
-                   Sigma = SigmaMatrix)
+  X = MASS::mvrnorm(n = NClass*N,
+                    mu = MeanMatrix,
+                    Sigma = SigmaMatrix)
   if(!is.na(NBins)){
     X = apply(X, MARGIN = 2, FUN = function(x) ntile(x, NBins))
-  }
+    }
   
 
   
