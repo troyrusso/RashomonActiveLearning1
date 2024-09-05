@@ -66,7 +66,7 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
                linetype = "dashed") + 
     
     ## Aesthetics ##
-    scale_x_continuous(breaks = c(seq(xlower,xupper, 10), 
+    scale_x_continuous(breaks = c(seq(xlower,xupper, 100), 
                                   StopIter1,
                                   StopIter2, 
                                   SimulationType1$InitialTrainingSetN),

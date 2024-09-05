@@ -50,8 +50,8 @@ if(exists("directory")){
 ```{r}
 ### Input ###
 # seed = 1234567890
-seed = 7
-N = 100
+seed = 1
+N = 1000
 K = 4
 NClass = 2
 # ClassProportion = c(3/5, 2/5)
@@ -81,7 +81,7 @@ RashomonParameters = list(K = K,
                           H = Inf,                           # Maximum number of pools/splits
                           R = NBins+1,                       # Bins of each arm (assume 0 exists)
                           reg = 0.1,                         # Penalty on the splits
-                          theta = 2,                         # Threshold; determine relative to best model
+                          theta = 3,                         # Threshold; determine relative to best model
                           inactive = 0)
 ```
 
@@ -127,6 +127,26 @@ SimulationFunc(dat = dat,
 ```
 
 ## Visualize
+
+```{r}
+saveRDS(list(SimResultsBreakingTiesFactorial = SimResultsBreakingTiesFactorial,
+             SimResultsBreakingTiesRashomon = SimResultsBreakingTiesRashomon,
+             Parameters = list(seed = seed,
+                               N = N,
+                               K = K,
+                               NClass = NClass,
+                               ClassProportion = ClassProportion,
+                               CovCorrVal = CovCorrVal,
+                               TestProportion = TestProportion,
+                               SelectorN = SelectorN,
+                               InitialN = InitialN,
+                               NBins = NBins,
+                               RashomonParameters = RashomonParameters)),
+        file = paste0(directory,"SimulationResults_Seed",seed,".RDS"))
+
+test<- readRDS(paste0(directory,"SimulationResults_Seed",seed,".RDS"))
+```
+
 
 ```{r}
 SimResults1 = SimResultsBreakingTiesFactorial
