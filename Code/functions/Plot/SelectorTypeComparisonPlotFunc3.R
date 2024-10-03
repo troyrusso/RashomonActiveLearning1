@@ -5,10 +5,12 @@
 # NEED TO WORK ON THIS MORE TO GENERALIZE #
 
 
-SelectorTypeComparisonPlotFunc = function(SimulationType1, 
+SelectorTypeComparisonPlotFunc3 = function(SimulationType1, 
                                           SimulationType2,
+                                          SimulationType3,
                                           StopIter1,
                                           StopIter2,
+                                          StopIter3,
                                           xlower = NULL, 
                                           xupper = NULL){
   ### Validation ###
@@ -30,17 +32,19 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
 
   
   # Error Lines #
-  JointErrors = data.frame(cbind(SimulationType1$Error, SimulationType2$Error))
+  JointErrors = data.frame(cbind(SimulationType1$Error, SimulationType2$Error, SimulationType3$Error))
   JointErrors$iter = (SimulationType1$InitialTrainingSetN+1):(length(SimulationType1$Error)+SimulationType1$InitialTrainingSetN)
   colnames(JointErrors) = c(paste0(SimulationType1$SelectorType, SimulationType1$ModelType),
                             paste0(SimulationType2$SelectorType, SimulationType2$ModelType),
+                            paste0(SimulationType3$SelectorType, SimulationType3$ModelType),
                             "iter")
   JointErrors = pivot_longer(JointErrors, -c(iter))
   colnames(JointErrors) = c("iter", "Method", "value")
   
   JointErrors = JointErrors %>%
     mutate(Method = case_when(Method == "BreakingTiesFactorial" ~ "Naive",
-                                    Method == "BreakingTiesRashomonLinear" ~ "Rashomon-weighted"))
+                              Method == "BreakingTiesRashomonLinear" ~ "Rashomon-weighted",
+                              Method == "RandomFactorial" ~ "Random"))
   
   # Stop Iter Line
   # JointStopIter = c(SimulationType1$StopIter,SimulationType1$SelectorType,
@@ -54,21 +58,13 @@ SelectorTypeComparisonPlotFunc = function(SimulationType1,
     
     ## Lines ##
     geom_line(data = JointErrors,
-              mapping = aes(x = iter, y = value, linetype = Method)) + 
-    
-    ## Iteration Stop Line ##
-    geom_vline(xintercept = StopIter1,
-               color = "red",
-               linetype = "solid") + 
-    
-    geom_vline(xintercept = StopIter2,
-               color = "red",
-               linetype = "dashed") + 
+              mapping = aes(x = iter, y = value, color = Method)) + 
     
     ## Aesthetics ##
     scale_x_continuous(breaks = c(seq(xlower,xupper, 50), 
                                   StopIter1,
                                   StopIter2, 
+                                  StopIter3, 
                                   SimulationType1$InitialTrainingSetN),
                        lim = c(xlower, xupper))    +
     xlab("Number of annotated observations") +
