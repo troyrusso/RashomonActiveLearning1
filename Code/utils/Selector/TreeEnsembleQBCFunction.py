@@ -1,4 +1,4 @@
-# Summary: 
+# Summary: QBC function for either random forest or Rashomon's TreeFarms.
 # Input:
 #   df_Train: The training set.
 #   df_Candidate: The candidate set.
@@ -10,26 +10,31 @@
 # NOTE: Incorporate covariate GSx in selection criteria? Good for tie breakers.
 
 ### Libraries ###
+import warnings
 import numpy as np
 from scipy.spatial.distance import cdist
 
 ### Function ###
-def RashomonQBCFunction(Model, df_Candidate, df_Train, TopCModels, AllErrors):
+def TreeEnsembleQBCFunction(Model, df_Candidate, df_Train, TopCModels, AllErrors):
 
     ### Ignore warning (taken care of) ###
     np.seterr(all = 'ignore') 
+    warnings.filterwarnings("ignore", category=UserWarning)
+
  
     # ### GSx: Incorporate? Good for tie breakers. Could also do GSx on the data set as opposed to the one-hot set
     # d_nmX = cdist(df_Candidate.loc[:,df_Candidate.columns!= "Y"], df_Train.loc[:,df_Train.columns!= "Y"], metric = distance)
     # d_nX = d_nmX.min(axis=1)
 
-    ### Errors and Prediction###
-    if len(AllErrors) < TopCModels:
-        TopCModels = len(AllErrors)
-    LowestErrorIndices = np.argsort(AllErrors)[:TopCModels]
-    PredictedValues = [Model[i].predict(df_Candidate) for i in LowestErrorIndices]
+    ### Predicted Values ###
+    if 'TREEFARMS' in str(type(Model)):                                                                         # TreeFarms
+        if len(AllErrors) < TopCModels:
+            TopCModels = len(AllErrors)
+        LowestErrorIndices = np.argsort(AllErrors)[:TopCModels]
+        PredictedValues = [Model[i].predict(df_Candidate) for i in LowestErrorIndices]                          # RandomForest
+    elif 'RandomForestClassifier' in str(type(Model)):
+        PredictedValues = [Model.estimators_[tree].predict(df_Candidate.loc[:, df_Candidate.columns != "Y"]) for tree in range(TopCModels)] 
     PredictedValues = np.vstack(PredictedValues)
-
 
     ### Vote Entropy ###
     VoteC = {}
