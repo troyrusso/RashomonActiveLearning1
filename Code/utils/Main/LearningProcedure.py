@@ -38,6 +38,10 @@ def LearningProcedure(SimulationConfigInputUpdated):
     ### Algorithm ###
     for i in range(len(SimulationConfigInputUpdated["df_Candidate"])):
 
+
+
+        
+
         ### Prediction Model ###
         print("Iteration: " + str(i))
         ModelType = globals().get(SimulationConfigInputUpdated["ModelType"], None)

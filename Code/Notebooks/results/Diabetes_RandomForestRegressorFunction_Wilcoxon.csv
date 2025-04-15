@@ -1,0 +1,5 @@
+,PassiveLearning,GSxFunction,GSyFunction,iGSFunction
+PassiveLearning,1.0,,,
+GSxFunction,0.5,1.0,,
+GSyFunction,1.0,0.25,1.0,
+iGSFunction,0.25,1.0,0.25,1.0

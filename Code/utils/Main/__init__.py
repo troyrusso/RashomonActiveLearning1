@@ -18,3 +18,4 @@ from .DataGeneratingProcess import *
 from .LearningProcedure import *
 from .OneIterationFunction import *
 from .TrainTestCandidateSplit import *
+from .run_active_learning_experiments import *
