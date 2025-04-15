@@ -223,6 +223,6 @@ cython_debug/
 
 # Ignore all result files and directories
 Results/
-#*.csv
+*.csv
 *.pkl
 
