@@ -4,14 +4,14 @@ echo "Processing results for dataset: $CURRENT_DIR"
 cd ~/RashomonActiveLearning
 
 ### Extract PassiveLearning Results ###
-cd ~/RashomonActiveLearning
+cd ~/RashomonActiveLearning1
 python Code/utils/Auxiliary/ProcessSimulationResults.py \
     --DataType "$CURRENT_DIR" \
     --ModelType "RandomForestClassification" \
     --Categories "PLA0.pkl"
 
 ### Extract Random Forests Results ###
-cd ~/RashomonActiveLearning
+cd ~/RashomonActiveLearning1
 python Code/utils/Auxiliary/ProcessSimulationResults.py \
     --DataType "$CURRENT_DIR" \
     --ModelType "RandomForestClassification" \
