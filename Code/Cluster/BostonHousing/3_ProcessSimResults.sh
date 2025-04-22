@@ -1,7 +1,7 @@
 ### Current Directory Name ###
 CURRENT_DIR=$(basename "$PWD")
 echo "Processing results for dataset: $CURRENT_DIR"
-cd ~/RashomonActiveLearning
+cd ~/RashomonActiveLearning1
 
 ### Extract PassiveLearning Results ###
 cd ~/RashomonActiveLearning1
