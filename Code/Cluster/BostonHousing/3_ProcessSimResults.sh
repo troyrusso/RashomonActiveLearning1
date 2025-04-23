@@ -7,14 +7,14 @@ cd ~/RashomonActiveLearning1
 cd ~/RashomonActiveLearning1
 python Code/utils/Auxiliary/ProcessSimulationResults.py \
     --DataType "$CURRENT_DIR" \
-    --ModelType "RandomForestClassification" \
+    --ModelType "Regresson" \
     --Categories "PLA0.pkl"
 
 ### Extract Random Forests Results ###
 cd ~/RashomonActiveLearning1
 python Code/utils/Auxiliary/ProcessSimulationResults.py \
     --DataType "$CURRENT_DIR" \
-    --ModelType "RandomForestClassification" \
+    --ModelType "Regresson" \ #RandomForestClassification
     --Categories "RFA0.pkl"
 
 # ### Extract Duplicate TREEFARMS Results ###
