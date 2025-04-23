@@ -12,9 +12,10 @@ python Code/utils/Auxiliary/ProcessSimulationResults.py \
 
 ### Extract Random Forests Results ###
 cd ~/RashomonActiveLearning1
+#RandomForestClassification
 python Code/utils/Auxiliary/ProcessSimulationResults.py \
     --DataType "$CURRENT_DIR" \
-    --ModelType "Regresson" \ #RandomForestClassification
+    --ModelType "Regresson" \
     --Categories "RFA0.pkl"
 
 # ### Extract Duplicate TREEFARMS Results ###
