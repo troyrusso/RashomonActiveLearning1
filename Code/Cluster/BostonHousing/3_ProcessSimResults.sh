@@ -20,22 +20,21 @@
 
 #chat gpt one here 
 #!/usr/bin/env bash
-cd "$(dirname "$0")"
+# jump to project root
+cd ~/RashomonActiveLearning1
+CURRENT_DIR=BostonHousing
 
-CURRENT_DIR=$(basename "$PWD")
 echo "Processing results for dataset: $CURRENT_DIR"
 
-# Duplicate‐TreeFarms (ε=0.025)
-python ~/RashomonActiveLearning1/Code/utils/Auxiliary/ProcessSimulationResults.py \
-  --DataType   "$CURRENT_DIR" \
-  --ModelType  "TreeFarms" \
-  --Categories "DPL0.025"
+python Code/utils/Auxiliary/ProcessSimulationResults.py \
+--DataType  "$CURRENT_DIR" \
+--ModelType "TreeFarms" \
+--Categories "DPL0.025"
 
-# Unique‐TreeFarms (ε=0.025)
-python ~/RashomonActiveLearning1/Code/utils/Auxiliary/ProcessSimulationResults.py \
-  --DataType   "$CURRENT_DIR" \
-  --ModelType  "TreeFarms" \
-  --Categories "UNQ0.025"
+python Code/utils/Auxiliary/ProcessSimulationResults.py \
+--DataType  "$CURRENT_DIR" \
+--ModelType "TreeFarms" \
+--Categories "UNQ0.025"
 
 
 # ### Extract Duplicate TREEFARMS Results ###
