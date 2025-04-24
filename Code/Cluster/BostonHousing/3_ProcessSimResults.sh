@@ -26,13 +26,13 @@ CURRENT_DIR=$(basename "$PWD")
 echo "Processing results for dataset: $CURRENT_DIR"
 
 # Duplicate‐TreeFarms (ε=0.025)
-python Code/utils/Auxiliary/ProcessSimulationResults.py \
+python ~/RashomonActiveLearning1/Code/utils/Auxiliary/ProcessSimulationResults.py \
   --DataType   "$CURRENT_DIR" \
   --ModelType  "TreeFarms" \
   --Categories "DPL0.025"
 
 # Unique‐TreeFarms (ε=0.025)
-python Code/utils/Auxiliary/ProcessSimulationResults.py \
+python ~/RashomonActiveLearning1/Code/utils/Auxiliary/ProcessSimulationResults.py \
   --DataType   "$CURRENT_DIR" \
   --ModelType  "TreeFarms" \
   --Categories "UNQ0.025"
