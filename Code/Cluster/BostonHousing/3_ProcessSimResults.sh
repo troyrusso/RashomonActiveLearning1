@@ -20,21 +20,27 @@
 
 #chat gpt one here 
 #!/usr/bin/env bash
-# jump to project root
+
+# 1) Jump to project root
 cd ~/RashomonActiveLearning1
-CURRENT_DIR=BostonHousing
 
-echo "Processing results for dataset: $CURRENT_DIR"
+DATASET=BostonHousing
+MODELT=TreeFarms
 
+echo "Processing results for dataset: $DATASET, model: $MODELT"
+
+# 2) Process DPL0.025
 python Code/utils/Auxiliary/ProcessSimulationResults.py \
---DataType  "$CURRENT_DIR" \
---ModelType "TreeFarms" \
---Categories "DPL0.025"
+  --DataType   "$DATASET" \
+  --ModelType  "$MODELT" \
+  --Categories "DPL0.025"
 
+# 3) Process UNQ0.025
 python Code/utils/Auxiliary/ProcessSimulationResults.py \
---DataType  "$CURRENT_DIR" \
---ModelType "TreeFarms" \
---Categories "UNQ0.025"
+  --DataType   "$DATASET" \
+  --ModelType  "$MODELT" \
+  --Categories "UNQ0.025"
+
 
 
 # ### Extract Duplicate TREEFARMS Results ###
