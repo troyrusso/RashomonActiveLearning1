@@ -1,7 +1,7 @@
 ### Current Directory Name ###
-# CURRENT_DIR=$(basename "$PWD")
-# echo "Processing results for dataset: $CURRENT_DIR"
-# cd ~/RashomonActiveLearning1
+CURRENT_DIR=$(basename "$PWD")
+echo "Processing results for dataset: $CURRENT_DIR"
+cd ~/RashomonActiveLearning1
 
 # ### Extract PassiveLearning Results ###
 # cd ~/RashomonActiveLearning1
@@ -18,9 +18,9 @@
 #     --ModelType "RandomForestClassification" \
 #     --Categories "RFA0.pkl"
 
-#chat gpt one here 
-#!/usr/bin/env bash
-cd "$(dirname "$0")"
+# #chat gpt one here 
+# #!/usr/bin/env bash
+# cd "$(dirname "$0")"
 
 CURRENT_DIR=$(basename "$PWD")
 echo "Processing results for dataset: $CURRENT_DIR"
