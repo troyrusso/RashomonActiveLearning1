@@ -57,7 +57,7 @@ for i, row in ParameterVector.iterrows():
         "#SBATCH --mail-type=FAIL",                                             # FAIL ALL
         "#SBATCH --mail-user=simondn@uw.edu",
         "",
-        "cd ~/RashomonActiveLearning",
+        "cd ~/RashomonActiveLearning1",
         "module load Python",
         "python Code/RunSimulation.py \\",
         f"    --JobName " + JobName +" \\",
