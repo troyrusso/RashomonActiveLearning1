@@ -26,6 +26,8 @@ from utils.Selector import *
 from utils.Auxiliary import *
 from utils.Prediction import *
 import pandas as pd
+def linear_schedule(i, T):
+                return i / T
 
 ### Function ###
 def LearningProcedure(SimulationConfigInputUpdated):
@@ -35,12 +37,30 @@ def LearningProcedure(SimulationConfigInputUpdated):
     SelectedObservationHistory = []
     TreeCount = {"AllTreeCount": [], "UniqueTreeCount": []}
 
+    #for adaptive
+    prev_error = None
+    SimulationConfigInputUpdated["w"] = 0.5
+
     ### Algorithm ###
-    for i in range(len(SimulationConfigInputUpdated["df_Candidate"])):
+    #for i in range(len(SimulationConfigInputUpdated["df_Candidate"])):
+    T = len(SimulationConfigInputUpdated["df_Candidate"])
+    for i in range(T):
 
-
-
-        
+        selected = SimulationConfigInputUpdated["SelectorType"]
+        if selected.startswith("WiGSFunction"):
+              SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
+        # ── SCHEDULING INJECTION ─────────────────────────────────────
+        # linear schedule from 0→1 over T steps (use i+1 so it never hits zero)
+        if selected == "WiGSFunction_linear":
+            SimulationConfigInputUpdated["w"] = (i+1) / T
+            #SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
+        elif selected == "WiGSFunction_exponential":
+            alpha = SimulationConfigInputUpdated.get("alpha", 10.0 / T)
+            w = 1 - np.exp(-alpha * (i + 1))
+            SimulationConfigInputUpdated["w"] = w
+            print("reached!!")
+            #SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
+        # ─────────────────────────────────────────────────────────────
 
         ### Prediction Model ###
         print("Iteration: " + str(i))
@@ -65,6 +85,23 @@ def LearningProcedure(SimulationConfigInputUpdated):
         QueryObservation = SimulationConfigInputUpdated["df_Candidate"].loc[[QueryObservationIndex]]
         SelectedObservationHistory.append(QueryObservationIndex)
         
+        ### WiGS ###
+        ## disable if not doing an adaptive wi ##
+        # ─── adaptive‐w update ────────────────────────────────────
+        if selected == "WiGSFunction_adaptive":
+            dx = SelectorFuncOutput.get("d_nX", 0.0)
+            dy = SelectorFuncOutput.get("d_nY", 0.0)
+            if prev_error is not None:
+                delta   = prev_error - CurrentError
+                eta = 0.1
+                new_w = SimulationConfigInputUpdated["w"] + eta*(dy - dx)*delta
+                # clip into [0,1]
+                SimulationConfigInputUpdated["w"] = max(0.0, min(1.0, new_w))
+        prev_error = CurrentError
+        # # ────────────────────────────────────────────────────────────
+
+
+
         ### Update Train and Candidate Sets ###
         SimulationConfigInputUpdated["df_Train"] = pd.concat([SimulationConfigInputUpdated["df_Train"], QueryObservation])
         SimulationConfigInputUpdated["df_Candidate"] = SimulationConfigInputUpdated["df_Candidate"].drop(QueryObservationIndex) 

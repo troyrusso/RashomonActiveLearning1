@@ -14,6 +14,56 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
 
+
+### WiGS ###
+# Summary: Weighted iGS (WiGS) samples based on a convex combination of input‐space and output‐space distances.
+#   Uses a single weight w ∈ [0,1] so that SelectionCriteria = (1-w)*ds_x + w*ds_y.
+# Input:
+#   df_Train: The training set (must include column "Y").
+#   df_Candidate: The candidate set (must include column "Y").
+#   Model: The predictive model (must have a .predict method).
+#   w: The mixing weight (float between 0 and 1).
+#   distance: The distance metric string (passed to scipy.spatial.distance.cdist).
+# Output:
+#   IndexRecommendation: The index of the recommended observation from df_Candidate.
+def WiGSFunction(df_Train, df_Candidate, Model, w, distance="euclidean"):
+    # --- GSx part: mean distance in X-space ---
+    d_nmX = cdist(
+        df_Candidate.loc[:, df_Candidate.columns != "Y"],
+        df_Train.loc[:, df_Train.columns != "Y"],
+        metric=distance
+    )
+    d_nX = d_nmX.min(axis=1)
+
+    # --- GSy part: mean distance in Y-space ---
+    # predict
+    Predictions = Model.predict(df_Candidate.loc[:, df_Candidate.columns != "Y"])
+    d_nmY = cdist(
+        Predictions.reshape(-1, 1),
+        df_Train["Y"].values.reshape(-1, 1),
+        metric=distance
+    )
+    d_nY = d_nmY.min(axis=1)
+
+    # --- Weighted score ---
+    score = (1 - w) * d_nX + w * d_nY
+
+    i = np.argmax(score)
+    IndexRecommendation = df_Candidate.iloc[[i]].index[0]
+
+    dx_i = float(d_nX[i])
+    dy_i = float(d_nY[i])
+    # --- Output ---
+    return {"IndexRecommendation": float(IndexRecommendation),
+        "d_nX": float(dx_i),
+        "d_nY": float(dy_i)}
+
+
+
+
+
+
+
 ### GSx ###
 def GSxFunctionAverage(df_Train, df_Candidate, distance = "euclidean"):
 

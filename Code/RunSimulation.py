@@ -7,7 +7,7 @@ import math as math
 import pandas as pd
 import random as random
 import matplotlib.pyplot as plt
-# from scipy.spatial.distance import cdist
+from scipy.spatial.distance import cdist
 
 ### Import functions ###
 from utils.Main import *
