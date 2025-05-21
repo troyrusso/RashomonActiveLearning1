@@ -45,14 +45,28 @@ def WiGSFunction(df_Train, df_Candidate, Model, w, distance="euclidean"):
     )
     d_nY = d_nmY.min(axis=1)
 
+
+    ### Standardize the Distances ###
+    # Compute the z-scores for each set of distances
+    # epsilon to avoid divide by zero error
+    epsilon = 1e-8
+    z_nX = (d_nX - np.mean(d_nX)) / (np.std(d_nX) + epsilon)
+    z_nY = (d_nY - np.mean(d_nY)) / (np.std(d_nY) + epsilon)
+
+    # Add the standardized distances instead of multiplying
+    score = z_nX + z_nY
     # --- Weighted score ---
-    score = (1 - w) * d_nX + w * d_nY
+    #score = (1 - w) * d_nX + w * d_nY
+    score = (1 - w) * z_nX + w * z_nY
+    #score = (w) * z_nX + (1-w) * z_nY
 
     i = np.argmax(score)
     IndexRecommendation = df_Candidate.iloc[[i]].index[0]
 
-    dx_i = float(d_nX[i])
-    dy_i = float(d_nY[i])
+    #dx_i = float(d_nX[i])
+    #dy_i = float(d_nY[i])
+    dx_i = float(z_nX[i])
+    dy_i = float(z_nY[i])
     # --- Output ---
     return {"IndexRecommendation": float(IndexRecommendation),
         "d_nX": float(dx_i),

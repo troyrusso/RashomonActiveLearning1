@@ -48,19 +48,22 @@ def LearningProcedure(SimulationConfigInputUpdated):
 
         selected = SimulationConfigInputUpdated["SelectorType"]
         if selected.startswith("WiGSFunction"):
-              SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
+        #       SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
         # ── SCHEDULING INJECTION ─────────────────────────────────────
         # linear schedule from 0→1 over T steps (use i+1 so it never hits zero)
-        if selected == "WiGSFunction_linear":
+        #if selected == "WiGSFunction_linear":
             SimulationConfigInputUpdated["w"] = (i+1) / T
-            #SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
-        elif selected == "WiGSFunction_exponential":
-            alpha = SimulationConfigInputUpdated.get("alpha", 10.0 / T)
-            w = 1 - np.exp(-alpha * (i + 1))
-            SimulationConfigInputUpdated["w"] = w
-            print("reached!!")
+            #print("i" + str(i))
+            SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
+        #print("reached!!")
+        #elif selected == "WiGSFunction_exponential":
+            # alpha = SimulationConfigInputUpdated.get("alpha", 10.0 / T)
+            # w = 1 - np.exp(-alpha * (i + 1))
+            # SimulationConfigInputUpdated["w"] = w
+            # print("reached!!")
             #SimulationConfigInputUpdated["SelectorType"] = "WiGSFunction"
         # ─────────────────────────────────────────────────────────────
+        #print("w: " + str(SimulationConfigInputUpdated["w"]))
 
         ### Prediction Model ###
         print("Iteration: " + str(i))

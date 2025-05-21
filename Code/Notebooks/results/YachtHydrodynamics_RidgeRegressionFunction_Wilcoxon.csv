@@ -1,0 +1,6 @@
+,PassiveLearning,GSxFunction,GSyFunction,iGSFunction,WiGSFunction_linear
+PassiveLearning,1.0,,,,
+GSxFunction,0.1494,1.0,,,
+GSyFunction,0.0653,0.8933,1.0,,
+iGSFunction,0.045,0.731,0.1826,1.0,
+WiGSFunction_linear,0.0562,0.9206,0.3035,0.4617,1.0
